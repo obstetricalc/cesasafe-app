@@ -8,7 +8,7 @@ st.set_page_config(page_title="ObstetriCalc: Apoio à Decisão", page_icon="👶
 def main():
     st.title("👶 ObstetriCalc: Relatório de Indicação de Via de Parto")
     st.markdown("""
-    **Aviso Legal:** Esta ferramenta é auxiliar. A decisão clínica final é de responsabilidade exclusiva do médico obstetra.
+    **Aviso Legal:** Esta ferramenta é auxiliar baseada em protocolos (ACOG/MS). A decisão clínica final é exclusiva do médico obstetra.
     """)
     
     st.markdown("---")
@@ -36,6 +36,7 @@ def main():
         abortos = st.number_input("A (Abortos)", min_value=0, value=0)
 
     # Alerta de Cesárea Prévia (Condicional)
+    tempo_cesarea = None
     if partos_cesareos > 0:
         st.warning("⚠️ Paciente com Cesárea Anterior")
         tempo_cesarea = st.radio(
@@ -45,7 +46,7 @@ def main():
 
     st.markdown("---")
     
-    # --- DATAÇÃO (LAYOUT DO DESENHO) ---
+    # --- DATAÇÃO ---
     st.subheader("📅 Datação da Gestação")
 
     # LINHA A: DUM -> IG -> DPP
@@ -56,7 +57,6 @@ def main():
     
     # Cálculo automático pela DUM
     dias_gest = (date.today() - dum).days
-    # Evitar números negativos se data for futura
     if dias_gest < 0: dias_gest = 0
     ig_sem = dias_gest // 7
     ig_dias = dias_gest % 7
@@ -73,7 +73,7 @@ def main():
     with col_eco:
         dpp_eco = st.date_input("DPP pela 1ª USG (DPP Eco)", value=date.today())
     
-    # Cálculo automático pela USG (Retroativo)
+    # Cálculo automático pela USG
     dt_concepcao_eco = dpp_eco - timedelta(days=280)
     dias_gest_eco = (date.today() - dt_concepcao_eco).days
     if dias_gest_eco < 0: dias_gest_eco = 0
@@ -83,7 +83,6 @@ def main():
     with col_ig_eco:
         st.metric("IG (pela USG)", f"{ig_sem_eco}s e {ig_dias_eco}d")
     
-    # Definindo qual IG usar para as sugestões finais (usando DUM como padrão para lógica)
     ig_final_semanas = ig_sem 
 
     st.markdown("---")
@@ -121,12 +120,6 @@ def main():
     with m3:
         score_malinas = m_paridade + m_duracao + m_membrana + m_distancia
         st.metric("Score de Malinas", score_malinas)
-        if score_malinas < 5:
-            st.success("Malinas: Transporte seguro")
-        elif score_malinas < 10:
-            st.warning("Malinas: Atenção no transporte")
-        else:
-            st.error("Malinas: Parto Iminente")
 
     st.markdown("---")
 
@@ -148,61 +141,87 @@ def main():
              "Desproporção Cefalopélvica (DCP)", "Sofrimento Fetal Agudo", 
              "Preeclampsia Grave / Eclampsia", "HIV Carga Viral Desconhecida/>1000"])
 
-    # --- 5. RELATÓRIO FINAL ---
+    # --- 5. RELATÓRIO FINAL INTELIGENTE ---
     st.markdown("---")
     if st.button("GERAR RELATÓRIO FINAL", type="primary"):
         
-        # Lógica de Sugestão
-        sugestao = "Avaliar Individualmente"
-        cor_box = "blue"
-        
+        # --- LÓGICA DE INTELIGÊNCIA CLÍNICA (O "CÉREBRO" DO APP) ---
+        analise_texto = []
+
+        # 1. Análise Bishop
+        if score_bishop < 6:
+            analise_texto.append(f"🔴 **Colo Desfavorável (Bishop {score_bishop}):** Colo imaturo. Caso haja indicação de interrupção da gestação, recomenda-se **preparo cervical** (ex: Misoprostol ou cateter de Foley) antes da infusão de ocitocina, para reduzir risco de falha de indução.")
+        else:
+            analise_texto.append(f"🟢 **Colo Favorável (Bishop {score_bishop}):** Colo maduro. Alta probabilidade de sucesso em caso de indução com ocitocina ou amniotomia.")
+
+        # 2. Análise Malinas (Transporte)
+        if score_malinas < 5:
+            analise_texto.append("🟢 **Malinas Baixo:** Baixo risco de parto iminente nas próximas horas. Transporte seguro para unidade de referência.")
+        elif score_malinas < 10:
+            analise_texto.append("🟡 **Malinas Intermediário:** Atenção. Risco moderado de parto no transporte. Avaliar distância da referência.")
+        else:
+            analise_texto.append("🔴 **ALERTA DE PARTO IMINENTE (Malinas ≥ 10):** Expulsivo provável em menos de 1 hora. Recomenda-se **NÃO TRANSPORTAR** e preparar material para parto no local, a menos que o transporte seja extremamente breve.")
+
+        # 3. Análise Vitalidade/Risco
         if "Categoria III (Anormal)" in ctg_class or "Sofrimento Fetal Agudo" in indicacoes_abs:
-            sugestao = "INDICAÇÃO DE CESÁREA DE EMERGÊNCIA (Sofrimento Fetal)"
+            analise_texto.append("🚨 **EMERGÊNCIA OBSTÉTRICA:** Sinais de comprometimento fetal grave. Indicação de extração fetal imediata (Via mais rápida). Medidas de reanimação intrauterina indicadas enquanto se prepara o parto.")
+        elif "Categoria II (Indeterminado)" in ctg_class:
+            analise_texto.append("🟡 **Alerta Vitalidade:** CTG Indeterminada. Necessário vigilância contínua, avaliação de variabilidade e manobras de reanimação intrauterina. Se persistir, considerar parto.")
+        
+        if liquido == "Meconial Espesso":
+            analise_texto.append("⚠️ **Mecônio Espesso:** Alerta para Síndrome de Aspiração Meconial. Presença de equipe de neonatologia essencial.")
+
+        # 4. Análise Cesárea Prévia
+        if partos_cesareos > 0:
+            if tempo_cesarea == "Menos de 2 anos (< 24 meses)":
+                analise_texto.append("⚠️ **Cesárea Anterior Recente (Interpartal Curto):** Risco aumentado de rotura uterina em caso de trabalho de parto. Monitorização rigorosa ou cesárea eletiva a depender da cicatriz.")
+            else:
+                analise_texto.append("ℹ️ **Cesárea Anterior:** Candidata à prova de trabalho de parto (TOLAC) se não houver outras contraindicações.")
+
+        # Concatenação do texto
+        parecer_final = "\n\n".join(analise_texto)
+
+        # Definição de Cor do Box Principal
+        cor_box = "blue"
+        if "EMERGÊNCIA" in parecer_final or "ALERTA" in parecer_final:
             cor_box = "red"
-        elif len([i for i in indicacoes_abs if i != "Nenhuma"]) > 0:
-            sugestao = "INDICAÇÃO DE CESÁREA (Fatores Materno/Fetais)"
+        elif "⚠️" in parecer_final or "🟡" in parecer_final:
             cor_box = "orange"
-        elif score_bishop < 6 and ig_final_semanas >= 41:
-            sugestao = "Colo Desfavorável. Avaliar Maturação/Indução se indicação de parto."
-            cor_box = "yellow"
-        elif score_bishop >= 6:
-            sugestao = "Favorável ao Parto Vaginal / Indução facilitada"
+        else:
             cor_box = "green"
 
-        # Exibição do Relatório
+        # --- EXIBIÇÃO ---
         st.markdown(f"""
-        ### 📄 Relatório de Admissão Obstétrica
-        **Data:** {datetime.now().strftime('%d/%m/%Y %H:%M')}
+        ### 🏥 Parecer Clínico Automatizado
+        **Data do Parecer:** {datetime.now().strftime('%d/%m/%Y %H:%M')}
         
-        **Paciente:** {nome} | **Idade:** {idade} anos
+        **Identificação:** {nome} ({idade} anos) | **IG:** {ig_sem}s {ig_dias}d
         **Histórico:** G{gestacoes} P{partos_normais} C{partos_cesareos} A{abortos}
-        
-        **Datação:**
-        * DUM: {dum.strftime('%d/%m/%Y')} -> IG: {ig_sem}s {ig_dias}d (DPP: {dpp_calc.strftime('%d/%m/%Y')})
-        * USG (DPP Eco): {dpp_eco.strftime('%d/%m/%Y')} -> IG Eco: {ig_sem_eco}s {ig_dias_eco}d
-        
-        ---
-        #### 📊 Índices
-        * **Bishop:** {score_bishop} ({'Desfavorável' if score_bishop < 6 else 'Favorável'})
-        * **Malinas:** {score_malinas}
-        * **CTG:** {ctg_class}
-        * **Riscos:** {', '.join(indicacoes_abs)}
-        
-        ---
-        ### 🎯 Conclusão Sugerida
         """)
         
+        # Mostra o Parecer baseada na lógica acima
         if cor_box == "red":
-            st.error(sugestao)
+            st.error(parecer_final)
         elif cor_box == "orange":
-            st.warning(sugestao)
+            st.warning(parecer_final)
         elif cor_box == "green":
-            st.success(sugestao)
+            st.success(parecer_final)
         else:
-            st.info(sugestao)
+            st.info(parecer_final)
 
-        st.text_area("Conduta Médica", height=100)
-        st.caption("CesaSafe App - Apoio à Decisão Clínica")
+        st.markdown("---")
+        st.markdown("#### 📝 Detalhamento dos Dados Coletados")
+        st.markdown(f"""
+        * **Datação:** DUM {dum.strftime('%d/%m')} (DPP {dpp_calc.strftime('%d/%m')}) | USG DPP {dpp_eco.strftime('%d/%m')}
+        * **Bishop:** {score_bishop}
+        * **Malinas:** {score_malinas}
+        * **Vitalidade:** {ctg_class} | LA: {liquido}
+        * **Fatores de Risco:** {', '.join(indicacoes_abs) if indicacoes_abs else 'Nenhum selecionado'}
+        """)
+
+        st.text_area("Conduta Médica e Prescrição (Digitável)", height=150, placeholder="Descreva o plano terapêutico, medicações prescritas e orientações...")
+        
+        st.caption("Documento gerado pelo sistema CesaSafe. Assinatura do Responsável: _________________________________")
 
 if __name__ == "__main__":
     main()
