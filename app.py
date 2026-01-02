@@ -85,7 +85,6 @@ def main():
             st.caption("Cálculo baseado na DPP informada.")
     
 st.markdown("---")
-
     # --- 2. ÍNDICE DE BISHOP (Maturação Cervical) ---
     st.header("2. Índice de Bishop")
     st.caption("Avaliação para sucesso de indução vs. Cesárea")
