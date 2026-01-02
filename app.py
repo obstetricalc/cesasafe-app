@@ -97,24 +97,4 @@ def main():
     with c1:
         dilatacao = st.selectbox("Dilatação (cm)", options=[0, 1, 2, 3], format_func=lambda x: ["0 cm (0)", "1-2 cm (1)", "3-4 cm (2)", "≥ 5 cm (3)"][x])
     with c2:
-        apagamento = st.selectbox("Apagamento (%)", options=[0, 1, 2, 3], format_func=lambda x: ["0-30% (0)", "40-50% (1)", "60-70% (2)", "≥ 80% (3)"][x])
-    with c3:
-        altura = st.selectbox("Altura (De Lee)", options=[0, 1, 2, 3], format_func=lambda x: ["-3 (0)", "-2 (1)", "-1 ou 0 (2)", "+1 ou +2 (3)"][x])
-    with c4:
-        consistencia = st.selectbox("Consistência", options=[0, 1, 2], format_func=lambda x: ["Firme (0)", "Média (1)", "Amolecida (2)"][x])
-    with c5:
-        posicao = st.selectbox("Posição", options=[0, 1, 2], format_func=lambda x: ["Posterior (0)", "Média (1)", "Anterior (2)"][x])
-
-    score_bishop = dilatacao + apagamento + altura + consistencia + posicao
-    st.metric("Score de Bishop Total", f"{score_bishop}/13")
-
-    # --- 3. ESCORE DE MALINAS ---
-    st.header("3. Escore de Malinas")
-    
-    m1, m2, m3 = st.columns(3)
-    with m1:
-        m_paridade = st.selectbox("Paridade (Malinas)", [0, 1, 2], format_func=lambda x: ["1 parto (0)", "2 partos (1)", "≥3 partos (2)"][x])
-        m_duracao = st.selectbox("Duração Trabalho de Parto", [0, 1, 2], format_func=lambda x: ["< 3h (0)", "3-5h (1)", "> 6h (2)"][x])
-    with m2:
-        m_membrana = st.selectbox("Membranas", [0, 1, 2], format_func=lambda x: ["Íntegras (0)", "Rotas recent. (1)", "Rotas >1h (2)"][x])
-        m_distancia = st.selectbox("Dilatação/Descida", [0, 1,
+        apagamento = st.selectbox("Apagamento (%)", options=[0, 1, 2,
