@@ -8,7 +8,7 @@ st.set_page_config(page_title="ObstetriCalc: Apoio à Decisão", page_icon="👶
 def main():
     st.title("👶 ObstetriCalc: Relatório de Indicação de Via de Parto")
     st.markdown("""
-    **Aviso Legal:** Esta ferramenta é auxiliar. A decisão clínica final é de responsabilidade exclusiva do médico obstetra.
+    **Aviso Legal:** ESTA FERRAMENTA É AUXILIAR. A DECISÃO CLÍNICA FINAL É DE RESPONSABILIDADE EXCLUSIVA DO MÉDICO OBSTETRA.
     """)
     
     st.markdown("---")
@@ -18,9 +18,9 @@ def main():
     col1, col2, col3 = st.columns(3)
     with col1:
         nome = st.text_input("Nome da Paciente")
-        idade = st.number_input("Idade", min_value=10, max_value=60, value=25)
+        idade = st.number_input("Idade", min_value=10, max_value=60, value=)
     with col2:
-        ig_semanas = st.number_input("IG (Semanas)", min_value=20, max_value=45, value=39)
+        ig_semanas = st.number_input("IG (Semanas)", min_value=1, max_value=45, value=)
         ig_dias = st.number_input("IG (Dias)", min_value=0, max_value=6, value=0)
     with col3:
         paridade = st.selectbox("Paridade", ["Nulípara", "Multípara"])
