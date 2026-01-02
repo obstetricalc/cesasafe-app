@@ -51,7 +51,6 @@ def main():
     # --- DATAÇÃO ---
     st.subheader("📅 Datação da Gestação")
 
-    # LINHA A: DUM -> IG -> DPP
     col_dum, col_ig_dum, col_dpp_dum = st.columns(3)
     
     # Variáveis iniciais
@@ -103,7 +102,7 @@ def main():
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 2: AVALIAÇÃO FETAL (ATUALIZADA)
+    # SEÇÃO 2: AVALIAÇÃO FETAL
     # ==========================================
     st.header("2. Avaliação Fetal Física")
     
@@ -113,7 +112,6 @@ def main():
         au = st.number_input("AU - Altura Uterina (cm)", min_value=0, max_value=60, value=0)
     
     with col_bcf:
-        # ATENÇÃO: Help atualizado para 120-160
         bcf = st.number_input("BCF (bpm)", min_value=0, max_value=250, value=140, help="Valor normal: 120 a 160 bpm")
     
     with col_sit:
@@ -191,8 +189,18 @@ def main():
     if st.button("GERAR RELATÓRIO FINAL", type="primary"):
         
         analise_texto = []
-        
-        # --- Lógica de Análise Fetal (ATUALIZADO 120-160) ---
+
+        # --- LÓGICA IDADE MATERNA (NOVO!) ---
+        if idade < 16:
+            analise_texto.append(f"⚠️ **Idade Materna ({idade} anos):** Adolescência precoce. Risco biológico aumentado para Desproporção Cefalopélvica (DCP) por imaturidade pélvica, além de risco para pré-eclâmpsia.")
+        elif idade < 20:
+            analise_texto.append(f"ℹ️ **Idade Materna ({idade} anos):** Gravidez na adolescência. Monitorar riscos de síndromes hipertensivas e prematuridade.")
+        elif idade >= 40:
+             analise_texto.append(f"⚠️ **Idade Materna Avançada ({idade} anos):** Alto risco para comorbidades (HAS, Diabetes), placentação anômala e óbito fetal. Vigilância rigorosa.")
+        elif idade >= 35:
+             analise_texto.append(f"ℹ️ **Idade Materna ({idade} anos):** Idade avançada. Risco aumentado para diabetes gestacional e hipertensão.")
+
+        # --- Lógica de Análise Fetal ---
         if bcf < 120:
             analise_texto.append(f"⚠️ **Bradicardia Fetal ({bcf} bpm):** Abaixo de 120 bpm. Necessária avaliação imediata da vitalidade fetal.")
         elif bcf > 160:
@@ -203,7 +211,7 @@ def main():
 
         # --- Lógica Bishop ---
         if score_bishop < 6:
-            analise_texto.append(f"🔴 **Colo Desfavorável (Bishop {score_bishop}):** Colo imaturo. Caso haja indicação de interrupção, recomenda-se preparo cervical prévio.")
+            analise_texto.append(f"🔴 **Colo Desfavorável (Bishop {score_bishop}):** Colo imaturo. Se houver indicação de interrupção, recomenda-se preparo cervical prévio.")
         else:
             analise_texto.append(f"🟢 **Colo Favorável (Bishop {score_bishop}):** Colo maduro. Indução facilitada.")
 
