@@ -8,283 +8,247 @@ st.set_page_config(page_title="CesaSafe: Apoio à Decisão", page_icon="🤰", l
 def main():
     st.title("🤰 CesaSafe: Sistema de Apoio à Decisão Obstétrica")
     st.markdown("""
-    **Aviso Legal:** Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais (ACOG/MS). 
-    A decisão clínica final é de responsabilidade exclusiva do médico obstetra.
+    **Aviso Legal:** Esta ferramenta é um protótipo acadêmico para apoio à decisão clínica, baseado em diretrizes (ACOG/MS). 
+    A responsabilidade final é exclusivamente do profissional médico.
     """)
-    
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 1: DADOS CLÍNICOS E DATAÇÃO
+    # 1. IDENTIFICAÇÃO E ANAMNESE
     # ==========================================
     st.header("1. Identificação e Anamnese Obstétrica")
-    
-    c_dados1, c_dados2 = st.columns([2, 1])
-    with c_dados1:
-        nome = st.text_input("Nome da Paciente")
-    with c_dados2:
-        idade = st.number_input("Idade Materna (anos)", min_value=10, max_value=60, value=25)
+    c1, c2 = st.columns([2, 1])
+    with c1: nome = st.text_input("Nome da Paciente")
+    with c2: idade = st.number_input("Idade Materna (anos)", 10, 60, 25)
 
     st.markdown("**Histórico Obstétrico:**")
-    col_g, col_pn, col_pc, col_a = st.columns(4)
-    with col_g: gestacoes = st.number_input("G - Gestações", min_value=1, value=1)
-    with col_pn: partos_normais = st.number_input("PN - Partos Vaginais", min_value=0, value=0)
-    with col_pc: partos_cesareos = st.number_input("PC - Partos Cesáreos", min_value=0, value=0)
-    with col_a: abortos = st.number_input("A - Abortos", min_value=0, value=0)
+    cg, cpn, cpc, ca = st.columns(4)
+    with cg: gestacoes = st.number_input("G (Gestações)", 1, 20, 1)
+    with cpn: partos_normais = st.number_input("PN (Partos Vaginais)", 0, 20, 0)
+    with cpc: partos_cesareos = st.number_input("PC (Cesáreas)", 0, 20, 0)
+    with ca: abortos = st.number_input("A (Abortos)", 0, 20, 0)
 
     tempo_cesarea = None
     if partos_cesareos > 0:
         st.warning("⚠️ Paciente com Cesárea Anterior")
-        tempo_cesarea = st.radio(
-            "Intervalo Interpartal (Tempo desde a última cesárea):",
-            ["Menos de 2 anos (< 24 meses)", "Mais de 2 anos (≥ 24 meses)"]
-        )
+        tempo_cesarea = st.radio("Intervalo Interpartal:", ["< 2 anos (Curto)", "≥ 2 anos (Adequado)"])
 
     st.markdown("---")
     
-    # --- DATAÇÃO ---
+    # ==========================================
+    # 2. DATAÇÃO DA GESTAÇÃO
+    # ==========================================
     st.subheader("📅 Cronologia e Datação")
-    col_dum, col_ig_dum, col_dpp_dum = st.columns(3)
+    cdum, cig, cdpp = st.columns(3)
     
-    # Variáveis Globais de Datação
-    ig_final_semanas = 0
+    # Lógica de Datação
+    ig_final_sem = 0
     ig_final_dias = 0
-    metodo_datacao = "Não definido"
-
-    # DUM
-    ig_str = "---"
-    dpp_str = "---"
-    dum_str = "Não informada"
-    with col_dum:
-        dum = st.date_input("DUM (Data da Última Menstruação)", value=None, format="DD/MM/YYYY")
-    if dum:
-        dum_str = dum.strftime('%d/%m/%Y')
-        dias_gest = (date.today() - dum).days
-        if dias_gest < 0: dias_gest = 0
-        ig_sem = dias_gest // 7
-        ig_dias = dias_gest % 7
-        dpp_calc = dum + timedelta(days=280)
-        dpp_str = dpp_calc.strftime('%d/%m/%Y')
-        ig_str = f"{ig_sem}s e {ig_dias}d"
-        # Define IG base pela DUM inicialmente
-        ig_final_semanas = ig_sem
-        ig_final_dias = ig_dias
-        metodo_datacao = "DUM"
-
-    with col_ig_dum: st.metric("IG (Calculada pela DUM)", ig_str)
-    with col_dpp_dum: st.metric("DPP (Provável)", dpp_str)
-
-    # USG
-    col_eco, col_ig_eco, col_vazio = st.columns(3)
-    ig_eco_str = "---"
-    dpp_eco_str = "Não informada"
-    with col_eco:
-        dpp_eco = st.date_input("DPP pela 1ª USG (Data Provável ECO)", value=None, format="DD/MM/YYYY")
-    if dpp_eco:
-        dpp_eco_str = dpp_eco.strftime('%d/%m/%Y')
-        dt_concepcao_eco = dpp_eco - timedelta(days=280)
-        dias_gest_eco = (date.today() - dt_concepcao_eco).days
-        if dias_gest_eco < 0: dias_gest_eco = 0
-        ig_sem_eco = dias_gest_eco // 7
-        ig_dias_eco = dias_gest_eco % 7
-        ig_eco_str = f"{ig_sem_eco}s e {ig_dias_eco}d"
-        # USG Precoce sobrepõe DUM se informada (Simplificação)
-        ig_final_semanas = ig_sem_eco
-        ig_final_dias = ig_dias_eco
-        metodo_datacao = "USG"
-
-    with col_ig_eco: st.metric("IG (Calculada pela USG)", ig_eco_str)
+    metodo_datacao = "Indefinido"
     
+    with cdum: dum = st.date_input("DUM", value=None, format="DD/MM/YYYY")
+    
+    dum_txt, ig_dum_txt, dpp_dum_txt = "---", "---", "---"
+    if dum:
+        dum_txt = dum.strftime('%d/%m/%Y')
+        days = (date.today() - dum).days
+        if days >= 0:
+            ig_final_sem, ig_final_dias = days // 7, days % 7
+            metodo_datacao = "DUM"
+            ig_dum_txt = f"{ig_final_sem}s {ig_final_dias}d"
+            dpp_dum_txt = (dum + timedelta(days=280)).strftime('%d/%m/%Y')
+
+    with cig: st.metric("IG (DUM)", ig_dum_txt)
+    with cdpp: st.metric("DPP (DUM)", dpp_dum_txt)
+
+    ceco, cigeco, cvazio = st.columns(3)
+    with ceco: dpp_eco = st.date_input("DPP pela 1ª USG", value=None, format="DD/MM/YYYY")
+    
+    usg_txt, ig_usg_txt = "---", "---"
+    if dpp_eco:
+        usg_txt = dpp_eco.strftime('%d/%m/%Y')
+        dt_conc = dpp_eco - timedelta(days=280)
+        days_eco = (date.today() - dt_conc).days
+        if days_eco >= 0:
+            ig_eco_sem, ig_eco_dias = days_eco // 7, days_eco % 7
+            ig_usg_txt = f"{ig_eco_sem}s {ig_eco_dias}d"
+            # USG sobrepõe DUM se informada
+            ig_final_sem, ig_final_dias = ig_eco_sem, ig_eco_dias
+            metodo_datacao = "USG Precoce"
+
+    with cigeco: st.metric("IG (USG)", ig_usg_txt)
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 2: BIOMETRIA E ESTÁTICA
+    # 3. EXAME FÍSICO E FETAL
     # ==========================================
-    st.header("2. Biometria e Estática Fetal")
-    col_au, col_bcf, col_sit, col_apres = st.columns(4)
-    with col_au: au = st.number_input("Altura Uterina - AU (cm)", min_value=0, max_value=60, value=0)
-    with col_bcf: bcf = st.number_input("BCF (bpm)", min_value=0, max_value=250, value=140, help="Faixa: 120-160 bpm")
-    with col_sit: situacao = st.selectbox("Situação Fetal", ["Longitudinal", "Transversa", "Oblíqua"])
-    with col_apres: apresentacao = st.selectbox("Apresentação Fetal", ["Cefálica", "Pélvica", "Córmica"])
-
+    st.header("3. Exame Físico e Fetal")
+    c_au, c_bcf, c_sit, c_apres = st.columns(4)
+    with c_au: au = st.number_input("AU (cm)", 0, 60, 0)
+    with c_bcf: bcf = st.number_input("BCF (bpm)", 0, 250, 140, help="Ref: 110-160")
+    with c_sit: situacao = st.selectbox("Situação", ["Longitudinal", "Transversa", "Oblíqua"])
+    with c_apres: apresentacao = st.selectbox("Apresentação", ["Cefálica", "Pélvica", "Córmica"])
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 3: BISHOP
+    # 4. ESCORES (BISHOP E MALINAS)
     # ==========================================
-    st.header("3. Índice de Bishop (Maturação Cervical)")
+    st.header("4. Avaliação Cervical e Transporte")
     c1, c2, c3, c4, c5 = st.columns(5)
-    with c1: dilatacao = st.selectbox("Dilatação Cervical (cm)", options=[0, 1, 2, 3], format_func=lambda x: ["0 cm (0)", "1-2 cm (1)", "3-4 cm (2)", "≥ 5 cm (3)"][x])
-    with c2: apagamento = st.selectbox("Apagamento Cervical (%)", options=[0, 1, 2, 3], format_func=lambda x: ["0-30% (0)", "40-50% (1)", "60-70% (2)", "≥ 80% (3)"][x])
-    with c3: altura = st.selectbox("Altura (De Lee)", options=[0, 1, 2, 3], format_func=lambda x: ["-3 (0)", "-2 (1)", "-1/0 (2)", "+1/+2 (3)"][x])
-    with c4: consistencia = st.selectbox("Consistência do Colo", options=[0, 1, 2], format_func=lambda x: ["Firme (0)", "Média (1)", "Amolecida (2)"][x])
-    with c5: posicao = st.selectbox("Posição do Colo", options=[0, 1, 2], format_func=lambda x: ["Posterior (0)", "Média (1)", "Anterior (2)"][x])
+    with c1: dilatacao = st.selectbox("Dilatação (cm)", [0,1,2,3], format_func=lambda x: ["0 (0)", "1-2 (1)", "3-4 (2)", "≥5 (3)"][x])
+    with c2: apagamento = st.selectbox("Apagamento (%)", [0,1,2,3], format_func=lambda x: ["0-30 (0)", "40-50 (1)", "60-70 (2)", "≥80 (3)"][x])
+    with c3: altura = st.selectbox("Altura (De Lee)", [0,1,2,3], format_func=lambda x: ["-3 (0)", "-2 (1)", "-1,0 (2)", "+1,+2 (3)"][x])
+    with c4: consistencia = st.selectbox("Consistência", [0,1,2], format_func=lambda x: ["Firme (0)", "Média (1)", "Amolecida (2)"][x])
+    with c5: posicao = st.selectbox("Posição", [0,1,2], format_func=lambda x: ["Posterior (0)", "Média (1)", "Anterior (2)"][x])
     score_bishop = dilatacao + apagamento + altura + consistencia + posicao
-    st.metric("Score de Bishop Total", f"{score_bishop}/13 pontos")
-
-    # ==========================================
-    # SEÇÃO 4: MALINAS
-    # ==========================================
-    st.header("4. Escore de Malinas (Transporte)")
+    
     m1, m2, m3 = st.columns(3)
-    with m1: m_paridade = st.selectbox("Paridade", [0, 1, 2], format_func=lambda x: ["1 parto (0)", "2 partos (1)", "≥3 partos (2)"][x])
-    with m2: m_membrana = st.selectbox("Integridade das Membranas", [0, 1, 2], format_func=lambda x: ["Íntegras (0)", "Rotas <1h (1)", "Rotas >1h (2)"][x])
-    with m2: m_duracao = st.selectbox("Duração do TP", [0, 1, 2], format_func=lambda x: ["< 3h (0)", "3-5h (1)", "> 6h (2)"][x])
-    with m3: m_distancia = st.selectbox("Dilatação/Descida", [0, 1, 2], format_func=lambda x: ["Alta/Fechada (0)", "Média (1)", "Baixa/Completa (2)"][x])
-    score_malinas = m_paridade + m_duracao + m_membrana + m_distancia
-    st.metric("Score de Malinas", score_malinas)
-
+    with m1: m_par = st.selectbox("Paridade (Malinas)", [0,1,2], format_func=lambda x: ["1 (0)", "2 (1)", "≥3 (2)"][x])
+    with m2: m_dur = st.selectbox("Duração TP", [0,1,2], format_func=lambda x: ["<3h (0)", "3-5h (1)", ">6h (2)"][x])
+    with m3: m_memb = st.selectbox("Membranas", [0,1,2], format_func=lambda x: ["Int. (0)", "Rot <1h (1)", "Rot >1h (2)"][x])
+    score_malinas = m_par + m_dur + m_memb + dilatacao # Reusando dilatacao (aprox)
+    
+    col_res1, col_res2 = st.columns(2)
+    col_res1.metric("Bishop Total", f"{score_bishop}/13")
+    col_res2.metric("Malinas Total", score_malinas)
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 5: VITALIDADE E RISCOS
+    # 5. VITALIDADE E FATORES DE RISCO
     # ==========================================
-    st.header("5. Vitalidade Fetal e Riscos")
-    col_fetal, col_indica = st.columns(2)
-    with col_fetal:
-        ctg_class = st.radio("Cardiotocografia (CTG - NICHD)", ("Categoria I (Normal)", "Categoria II (Indeterminado)", "Categoria III (Anormal)"))
-        liquido = st.selectbox("Líquido Amniótico", ["Claro / Grumos Finos", "Meconial Fluido", "Meconial Espesso", "Sanguinolento/Fétido"])
-    with col_indica:
-        indicacoes_abs = st.multiselect("Fatores de Risco Presentes:", 
-            ["Nenhum", "Placenta Prévia", "Iteratividade (2+ cesáreas)", "Herpes Genital Ativo", 
-             "DCP (Desproporção)", "Sofrimento Fetal Agudo", "Pré-eclâmpsia/Eclâmpsia", 
-             "HIV Carga Viral Desconhecida", "Febre Materna Intraparto"])
-
-    # ==========================================
-    # CÉREBRO CLÍNICO (PROCESSAMENTO)
-    # ==========================================
+    st.header("5. Vitalidade e Riscos")
+    cf, ci = st.columns(2)
+    with cf:
+        ctg = st.radio("CTG (NICHD)", ["Categoria I (Normal)", "Categoria II (Suspeito)", "Categoria III (Anormal)"])
+        liq = st.selectbox("Líquido Amniótico", ["Claro", "Meconial Fluido", "Meconial Espesso", "Sanguinolento/Fétido"])
+    with ci:
+        riscos = st.multiselect("Fatores de Risco:", [
+            "Nenhum", "Iteratividade (2+ Cesáreas)", "Placenta Prévia", "Herpes Ativo", 
+            "DCP", "Sofrimento Fetal Agudo", "Pré-eclâmpsia/Eclâmpsia", 
+            "HIV > 1000cp/Desconhecido", "Febre Materna"
+        ])
     st.markdown("---")
-    if st.button("GERAR ANÁLISE CLÍNICA COMPLETA", type="primary"):
+
+    # ==========================================
+    # RELATÓRIO DE INTELIGÊNCIA CLÍNICA
+    # ==========================================
+    if st.button("GERAR LAUDO OBSTÉTRICO COMPLETO", type="primary"):
         
-        diagnosticos = []
-        condutas = []
-        nivel_alerta = 0 # 0=Verde, 1=Amarelo, 2=Laranja, 3=Vermelho
-
-        # --- 1. ANÁLISE DE VITALIDADE E INFECÇÃO ---
-        ctg_anormal = "Categoria III" in ctg_class or "Sofrimento Fetal" in indicacoes_abs
-        ctg_indet = "Categoria II" in ctg_class
-        mec_espesso = liquido == "Meconial Espesso"
-
-        # Risco de Corioamnionite (Febre + Taqui + Bolsa Rota >1h)
-        sinais_infeccao = 0
-        if "Febre Materna Intraparto" in indicacoes_abs: sinais_infeccao += 1
-        if bcf > 160: sinais_infeccao += 1
-        if m_membrana == 2: sinais_infeccao += 1 # Rotas > 1h
-        if liquido == "Sanguinolento/Fétido": sinais_infeccao += 2
-
-        if ctg_anormal:
-            diagnosticos.append("🚨 **SOFRIMENTO FETAL AGUDO:** Evidência de hipóxia grave.")
-            condutas.append("- **Resolução Imediata:** Via de parto mais rápida (Cesárea de emergência ou parto vaginal instrumental se expulsivo).")
-            condutas.append("- Reanimação intrauterina imediata (O2, decúbito lateral, suspender ocitocina).")
-            nivel_alerta = 3
-        elif ctg_indet and mec_espesso:
-            diagnosticos.append("🟠 **Vitalidade Reservada:** CTG indeterminada com mecônio espesso.")
-            condutas.append("- Alto risco de Síndrome de Aspiração Meconial. Preparar Neonatologia.")
-            condutas.append("- Vigilância contínua. Considerar resolução se não houver progressão rápida.")
-            nivel_alerta = 2
-        elif sinais_infeccao >= 2:
-            diagnosticos.append("🟠 **Suspeita de Corioamnionite:** Sinais clínicos sugestivos.")
-            condutas.append("- Iniciar antibioticoterapia intraparto conforme protocolo.")
-            condutas.append("- Abreviar o trabalho de parto. Antipirético se febre.")
-            nivel_alerta = 2
-
-        # --- 2. ANÁLISE DE TRABALHO DE PARTO E PREMATURIDADE ---
-        is_prematuro = 0 < ig_final_semanas < 37
-        is_posdatismo = ig_final_semanas >= 41
+        # --- PROCESSAMENTO ---
         
-        if score_malinas >= 10:
-            if is_prematuro:
-                diagnosticos.append(f"🔴 **TRABALHO DE PARTO PREMATURO ({ig_final_semanas}sem):** Parto iminente.")
-                condutas.append("- Neuroproteção (Sulfato de Magnésio) se < 32 sem.")
-                condutas.append("- Prevenção de hipotermia do RN. Não transportar se nascimento previsto < 30min.")
-                nivel_alerta = max(nivel_alerta, 3)
-            else:
-                diagnosticos.append("🔴 **Parto Iminente (Expulsivo):** Malinas elevado.")
-                condutas.append("- Assistência ao parto in loco. Risco alto de parto no transporte.")
-                nivel_alerta = max(nivel_alerta, 3)
-        elif is_posdatismo:
-             diagnosticos.append(f"ℹ️ **Gestação Pós-termo ({ig_final_semanas}sem):** Aumento de risco de insuficiência placentária.")
-             condutas.append("- Monitoramento rigoroso do volume de líquido e vitalidade.")
-             condutas.append("- Indicação formal de indução do parto (se sem contraindicações).")
+        # 1. Análise Cronológica
+        analise_crono = []
+        if ig_final_sem < 37:
+            analise_crono.append(f"🔴 **Prematuridade ({ig_final_sem}s):** Risco de SDR. Necessário corticoide/neuroproteção se indicado.")
+        elif ig_final_sem >= 41:
+            analise_crono.append(f"🟠 **Pós-datismo ({ig_final_sem}s):** Risco de insuficiência placentária. Vigilância rigorosa.")
+        else:
+            analise_crono.append(f"🟢 **Termo ({ig_final_sem}s):** Idade gestacional oportuna para resolução.")
 
-        # --- 3. ANÁLISE DE VIA DE PARTO E CICATRIZ UTERINA ---
-        iteratividade = "Iteratividade (2+ cesáreas)" in indicacoes_abs
-        tem_cesarea = partos_cesareos > 0
+        # 2. Análise Fetal
+        analise_fetal = []
+        if bcf < 110: analise_fetal.append(f"🔴 **Bradicardia ({bcf} bpm):** Risco de hipóxia aguda.")
+        elif bcf > 160: analise_fetal.append(f"🟠 **Taquicardia ({bcf} bpm):** Investigar infecção/hipóxia.")
+        else: analise_fetal.append(f"🟢 **BCF Normal ({bcf} bpm).**")
         
-        if iteratividade:
-            diagnosticos.append("⚠️ **Iteratividade (2+ Cesáreas):** Contraindicação relativa/absoluta ao parto vaginal.")
-            condutas.append("- Programação de Cesárea Eletiva/Urgência.")
-            condutas.append("- Contraindicada indução com misoprostol ou ocitocina.")
-            nivel_alerta = max(nivel_alerta, 2)
-        elif tem_cesarea:
-            if tempo_cesarea == "Menos de 2 anos (< 24 meses)":
-                diagnosticos.append("⚠️ **Cesárea Anterior Recente:** Intervalo interpartal curto.")
-                condutas.append("- Risco aumentado de rotura uterina. Monitorar cicatriz.")
-            
-            # Correlação Crítica: Bishop Ruim + Cesárea Prévia
+        if apresentacao != "Cefálica": analise_fetal.append(f"🟠 **Apresentação {apresentacao}:** Atenção à via de parto.")
+
+        # 3. Análise Vitalidade e Infecção
+        analise_vital = []
+        sinais_inf = 0
+        if "Febre Materna" in riscos: sinais_inf += 1
+        if bcf > 160: sinais_inf += 1
+        if m_memb == 2: sinais_inf += 1 # Rotas > 1h
+        if liq == "Sanguinolento/Fétido": sinais_inf += 2
+
+        if "Categoria III" in ctg or "Sofrimento Fetal Agudo" in riscos:
+            analise_vital.append("🔴 **Sofrimento Fetal Agudo:** Indicação de resolução imediata.")
+        elif "Categoria II" in ctg:
+            analise_vital.append("🟠 **CTG Suspeita:** Vigilância contínua e reanimação intrauterina.")
+        
+        if sinais_inf >= 2:
+            analise_vital.append("🟠 **Risco de Corioamnionite:** Considerar antibiótico e resolução.")
+        if liq == "Meconial Espesso":
+            analise_vital.append("🟠 **Mecônio Espesso:** Risco de SAM. Equipe de Neo a postos.")
+
+        # 4. Análise Cervical e Via de Parto
+        analise_parto = []
+        contraindica_vaginal = False
+        contraindica_miso = False
+
+        if "Placenta Prévia" in riscos or "Herpes Ativo" in riscos or "Iteratividade (2+ Cesáreas)" in riscos or "DCP" in riscos:
+            contraindica_vaginal = True
+            analise_parto.append("🔴 **Contraindicação ao Parto Vaginal:** (Placenta Prévia, Iteratividade, Herpes ou DCP).")
+        
+        if partos_cesareos > 0:
+            contraindica_miso = True
+            analise_parto.append("⚠️ **Cicatriz Uterina Prévia:** Misoprostol contraindicado. Risco de rotura.")
+        
+        if not contraindica_vaginal:
             if score_bishop < 6:
-                 diagnosticos.append("⚠️ **Colo Desfavorável em Pct com Cesárea Prévia:**")
-                 condutas.append("- **ATENÇÃO:** O uso de Misoprostol é CONTRAINDICADO para maturação cervical (risco de rotura).")
-                 condutas.append("- Opções: Maturação mecânica (Sonda Foley) ou Cesárea.")
-                 nivel_alerta = max(nivel_alerta, 2)
+                if contraindica_miso:
+                    analise_parto.append("🟠 **Colo Imaturo em Cesareada:** Maturação apenas mecânica (Foley) ou Cesárea.")
+                else:
+                    analise_parto.append("🟡 **Colo Imaturo:** Necessário preparo cervical (Misoprostol/Foley) para indução.")
             else:
-                diagnosticos.append("🟢 **TOLAC Favorável:** Colo maduro em paciente com cesárea prévia.")
-                condutas.append("- Candidata a parto vaginal. Monitorização contínua.")
+                analise_parto.append("🟢 **Colo Maduro:** Favorável à indução com Ocitocina/Amniotomia.")
 
-        # --- 4. ANÁLISE DE APRESENTAÇÃO ---
-        if apresentacao != "Cefálica":
-            if score_malinas > 5 and apresentacao == "Pélvica":
-                diagnosticos.append("🚨 **PARTO PÉLVICO EM ANDAMENTO:** Situação de alto risco.")
-                condutas.append("- Acionar equipe experiente. Preparar manobras de Bracht/Mauriceau.")
-                nivel_alerta = 3
-            else:
-                diagnosticos.append(f"⚠️ **Apresentação {apresentacao}:**")
-                condutas.append("- Encaminhar para avaliação de via de parto (Cesárea ou VCE).")
-                nivel_alerta = max(nivel_alerta, 2)
-
-        # --- 5. BISHOP ISOLADO (Se não caiu nas regras acima) ---
-        if score_bishop < 6 and not iteratividade and nivel_alerta < 2:
-            diagnosticos.append("ℹ️ **Colo Imaturo (Bishop Baixo):**")
-            condutas.append("- Para indução: Necessário maturação cervical (Misoprostol/Foley).")
-        elif score_bishop >= 6 and nivel_alerta < 2:
-            diagnosticos.append("ℹ️ **Colo Maduro:**")
-            condutas.append("- Favorável à amniotomia ou ocitocina se necessário.")
-
-        # --- GERAÇÃO DO TEXTO FINAL ---
-        if not diagnosticos: diagnosticos.append("✅ Avaliação dentro dos parâmetros de normalidade.")
-        if not condutas: condutas.append("- Manter conduta expectante e monitoramento de rotina.")
-
-        # Box Colorido
-        box_type = ["success", "warning", "warning", "error"][nivel_alerta] # 0=Green, 1=Yellow, 2=Orange, 3=Red
+        # --- EXIBIÇÃO DO RELATÓRIO ---
         
         st.markdown(f"""
-        ### 🏥 Relatório de Análise Clínica - CesaSafe
-        **Paciente:** {nome} ({idade}a) | **IG:** {ig_final_semanas}s {ig_final_dias}d | **G{gestacoes} P{partos_normais} C{partos_cesareos} A{abortos}**
+        ### 📄 LAUDO MÉDICO OBSTÉTRICO (CesaSafe)
+        **Data:** {datetime.now().strftime('%d/%m/%Y %H:%M')} | **Paciente:** {nome} ({idade}a)
+        **Diagnóstico Obstétrico:** G{gestacoes} P{partos_normais} C{partos_cesareos} A{abortos} | IG: {ig_final_sem}s {ig_final_dias}d
         """)
 
-        # Container Principal
-        with st.container():
-            if nivel_alerta == 3:
-                st.error("🚨 **SITUAÇÃO CRÍTICA / EMERGÊNCIA**")
-            elif nivel_alerta == 2:
-                st.warning("🟠 **ALTO RISCO / ATENÇÃO ESPECIAL**")
-            elif nivel_alerta == 1:
-                st.info("🟡 **RISCO MODERADO / ALERTA**")
-            else:
-                st.success("🟢 **BAIXO RISCO / ROTINA**")
+        st.info("### 1️⃣ Análise Cronológica e Fetal")
+        for i in analise_crono: st.write(i)
+        for i in analise_fetal: st.write(i)
 
-            c_diag, c_cond = st.columns(2)
-            with c_diag:
-                st.markdown("#### 🔍 Diagnósticos e Alertas")
-                for d in diagnosticos: st.write(d)
-            
-            with c_cond:
-                st.markdown("#### 💉 Conduta Sugerida (Protocolo)")
-                for c in condutas: st.write(c)
+        st.warning("### 2️⃣ Análise de Vitalidade e Riscos")
+        if not analise_vital: st.write("✅ Sem alterações agudas de vitalidade detectadas.")
+        for i in analise_vital: st.write(i)
 
+        st.success("### 3️⃣ Avaliação de Via de Parto (Cérvice/Pelve)")
+        for i in analise_parto: st.write(i)
+        
+        # CONCLUSÃO FINAL (SÍNTESE)
         st.markdown("---")
-        st.caption("Resumo dos Parâmetros: Bishop: {} | Malinas: {} | BCF: {} | CTG: {}".format(score_bishop, score_malinas, bcf, ctg_class))
-        st.text_area("Anotações Médicas Complementares", height=100)
+        st.header("🎯 CONCLUSÃO E CONDUTA SUGERIDA")
+        
+        nivel_final = "VERDE"
+        texto_conclusao = ""
+        
+        # Lógica da Conclusão
+        if "Categoria III" in ctg or "Sofrimento Fetal Agudo" in riscos or "Pré-eclâmpsia/Eclâmpsia" in riscos:
+            nivel_final = "VERMELHO"
+            texto_conclusao = "EMERGÊNCIA OBSTÉTRICA. Necessária estabilização e resolução imediata da gestação (Via mais rápida)."
+        elif contraindica_vaginal:
+            nivel_final = "LARANJA"
+            texto_conclusao = "INDICAÇÃO DE CESÁREA. Fatores obstrutivos ou risco materno-fetal elevado para parto vaginal."
+        elif score_malinas >= 10:
+            nivel_final = "VERMELHO"
+            texto_conclusao = "PARTO IMINENTE (PERÍODO EXPULSIVO). Assistência ao parto in loco. Não transportar."
+        elif "Prematuridade" in analise_crono[0] and score_malinas >= 5:
+            nivel_final = "LARANJA"
+            texto_conclusao = "TRABALHO DE PARTO PREMATURO. Inibição/Neuroproteção/Corticoide conforme protocolo. Referenciar UTI Neo."
+        elif score_bishop < 6 and not contraindica_vaginal:
+             nivel_final = "AMARELO"
+             texto_conclusao = "COLO DESFAVORÁVEL. Se houver indicação de parto, iniciar maturação cervical (Método conforme cicatriz uterina)."
+        else:
+             texto_conclusao = "GESTAÇÃO DE CURSO HABITUAL / COLO FAVORÁVEL. Seguir rotina de assistência ao trabalho de parto ou indução."
+
+        if nivel_final == "VERMELHO":
+            st.error(f"**CONDUTA:** {texto_conclusao}")
+        elif nivel_final == "LARANJA":
+            st.warning(f"**CONDUTA:** {texto_conclusao}")
+        elif nivel_final == "AMARELO":
+            st.info(f"**CONDUTA:** {texto_conclusao}")
+        else:
+            st.success(f"**CONDUTA:** {texto_conclusao}")
+
+        st.text_area("Prescrição e Evolução Médica (Editável)", height=150)
+        st.caption("Documento gerado eletronicamente pelo sistema CesaSafe.")
 
 if __name__ == "__main__":
     main()
