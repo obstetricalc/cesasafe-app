@@ -14,19 +14,77 @@ def main():
     st.markdown("---")
 
     # --- 1. DADOS DA GESTANTE ---
-    st.header("1. Dados Clínicos")
-    col1, col2, col3 = st.columns(3)
-    with col1:
+    st.header("1. Dados Clínicos e Obstétricos")
+    
+    # Identificação Básica
+    c_dados1, c_dados2 = st.columns([2, 1])
+    with c_dados1:
         nome = st.text_input("Nome da Paciente")
+    with c_dados2:
         idade = st.number_input("Idade", min_value=10, max_value=60, value=25)
-    with col2:
-        ig_semanas = st.number_input("IG (Semanas)", min_value=20, max_value=45, value=39)
-        ig_dias = st.number_input("IG (Dias)", min_value=0, max_value=6, value=0)
-    with col3:
-        paridade = st.selectbox("Paridade", ["Nulípara", "Multípara"])
-        cesareas_anteriores = st.number_input("Cesáreas Anteriores", min_value=0, max_value=10, value=0)
 
+    # Histórico Obstétrico (G P A)
+    st.markdown("**Histórico Obstétrico:**")
+    col_g, col_pn, col_pc, col_a = st.columns(4)
+    with col_g:
+        gestacoes = st.number_input("G (Gestações)", min_value=1, value=1)
+    with col_pn:
+        partos_normais = st.number_input("PN (Partos Normais)", min_value=0, value=0)
+    with col_pc:
+        partos_cesareos = st.number_input("PC (Cesáreas)", min_value=0, value=0)
+    with col_a:
+        abortos = st.number_input("A (Abortos)", min_value=0, value=0)
+
+    # Alerta de Cesárea Prévia
+    if partos_cesareos > 0:
+        st.warning("⚠️ Paciente com Cesárea Anterior")
+        tempo_cesarea = st.radio(
+            "Há quanto tempo foi a última cesárea?",
+            ["Menos de 2 anos (< 24 meses)", "Mais de 2 anos (≥ 24 meses)"]
+        )
+    
     st.markdown("---")
+    
+    # Cálculo de IG e DPP
+    st.subheader("Cálculo da Idade Gestacional (IG)")
+    
+    tipo_calculo = st.radio("Método de Datação:", ("Pela DUM", "Pela USG (DPP Eco)"), horizontal=True)
+    
+    ig_semanas = 0 # Variável final usada no resto do app
+    
+    col_data1, col_data2 = st.columns(2)
+    
+    if tipo_calculo == "Pela DUM":
+        with col_data1:
+            dum = st.date_input("Data da Última Menstruação (DUM)", value=date.today() - timedelta(days=280))
+        
+        # Cálculos DUM
+        dias_gestacao = (date.today() - dum).days
+        ig_semanas = dias_gestacao // 7
+        ig_dias = dias_gestacao % 7
+        dpp_calc = dum + timedelta(days=280)
+        
+        with col_data2:
+            st.metric("IG (DUM)", f"{ig_semanas}s e {ig_dias}d")
+            st.metric("DPP (Provável)", dpp_calc.strftime('%d/%m/%Y'))
+            
+    else: # Pela USG
+        with col_data1:
+            dpp_eco = st.date_input("DPP da 1ª USG (Data Provável do Parto)")
+            
+        # Cálculos USG (Retroativo)
+        # Se a DPP é X, a concepção foi X - 280. A IG é Hoje - Concepção.
+        data_concepcao_teorica = dpp_eco - timedelta(days=280)
+        dias_gestacao_usg = (date.today() - data_concepcao_teorica).days
+        
+        ig_semanas = dias_gestacao_usg // 7
+        ig_dias = dias_gestacao_usg % 7
+        
+        with col_data2:
+            st.metric("IG (USG)", f"{ig_semanas}s e {ig_dias}d")
+            st.caption("Cálculo baseado na DPP informada.")
+    
+st.markdown("---")
 
     # --- 2. ÍNDICE DE BISHOP (Maturação Cervical) ---
     st.header("2. Índice de Bishop")
