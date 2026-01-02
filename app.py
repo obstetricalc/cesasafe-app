@@ -8,7 +8,7 @@ st.set_page_config(page_title="ObstetriCalc: Apoio à Decisão", page_icon="👶
 def main():
     st.title("👶 ObstetriCalc: Relatório de Indicação de Via de Parto")
     st.markdown("""
-    **Aviso Legal:** Esta ferramenta é auxiliar baseada em protocolos (ACOG/MS). A decisão clínica final é exclusiva do médico obstetra.
+    **Aviso Legal:** Esta ferramenta é auxiliar baseada em protocolos. A decisão clínica final é exclusiva do médico obstetra.
     """)
     
     st.markdown("---")
@@ -103,7 +103,7 @@ def main():
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 2: AVALIAÇÃO FETAL (NOVO!)
+    # SEÇÃO 2: AVALIAÇÃO FETAL (ATUALIZADA)
     # ==========================================
     st.header("2. Avaliação Fetal Física")
     
@@ -113,7 +113,8 @@ def main():
         au = st.number_input("AU - Altura Uterina (cm)", min_value=0, max_value=60, value=0)
     
     with col_bcf:
-        bcf = st.number_input("BCF (bpm)", min_value=0, max_value=250, value=140, help="Valor normal: 110 a 160 bpm")
+        # ATENÇÃO: Help atualizado para 120-160
+        bcf = st.number_input("BCF (bpm)", min_value=0, max_value=250, value=140, help="Valor normal: 120 a 160 bpm")
     
     with col_sit:
         situacao = st.selectbox("Situação", ["Longitudinal", "Transversa", "Oblíqua"])
@@ -124,7 +125,7 @@ def main():
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 3: BISHOP (Renumerado)
+    # SEÇÃO 3: BISHOP
     # ==========================================
     st.header("3. Índice de Bishop")
     st.caption("Avaliação para sucesso de indução vs. Cesárea")
@@ -146,7 +147,7 @@ def main():
     st.metric("Score de Bishop Total", f"{score_bishop}/13")
 
     # ==========================================
-    # SEÇÃO 4: MALINAS (Renumerado)
+    # SEÇÃO 4: MALINAS
     # ==========================================
     st.header("4. Escore de Malinas")
     
@@ -164,7 +165,7 @@ def main():
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 5: CTG E RISCOS (Renumerado)
+    # SEÇÃO 5: CTG E RISCOS
     # ==========================================
     st.header("5. Avaliação Fetal e Indicações")
     col_fetal, col_indica = st.columns(2)
@@ -191,11 +192,11 @@ def main():
         
         analise_texto = []
         
-        # --- Lógica de Análise Fetal (NOVO) ---
-        if bcf < 110:
-            analise_texto.append(f"⚠️ **Bradicardia Fetal ({bcf} bpm):** Necessária avaliação imediata da vitalidade fetal.")
+        # --- Lógica de Análise Fetal (ATUALIZADO 120-160) ---
+        if bcf < 120:
+            analise_texto.append(f"⚠️ **Bradicardia Fetal ({bcf} bpm):** Abaixo de 120 bpm. Necessária avaliação imediata da vitalidade fetal.")
         elif bcf > 160:
-            analise_texto.append(f"⚠️ **Taquicardia Fetal ({bcf} bpm):** Investigar corioamnionite, febre materna ou hipóxia inicial.")
+            analise_texto.append(f"⚠️ **Taquicardia Fetal ({bcf} bpm):** Acima de 160 bpm. Investigar corioamnionite, febre materna ou hipóxia inicial.")
         
         if apresentacao != "Cefálica":
             analise_texto.append(f"⚠️ **Apresentação {apresentacao}:** Risco para parto vaginal. Avaliar via de parto conforme protocolo (Cesárea ou Versão Externa).")
