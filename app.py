@@ -97,4 +97,112 @@ def main():
     with c1:
         dilatacao = st.selectbox("Dilatação (cm)", options=[0, 1, 2, 3], format_func=lambda x: ["0 cm (0)", "1-2 cm (1)", "3-4 cm (2)", "≥ 5 cm (3)"][x])
     with c2:
-        apagamento = st.selectbox("Apagamento (%)", options=[0, 1, 2,
+        apagamento = st.selectbox("Apagamento (%)", options=[0, 1, 2, 3], format_func=lambda x: ["0-30% (0)", "40-50% (1)", "60-70% (2)", "≥ 80% (3)"][x])
+    with c3:
+        altura = st.selectbox("Altura (De Lee)", options=[0, 1, 2, 3], format_func=lambda x: ["-3 (0)", "-2 (1)", "-1 ou 0 (2)", "+1 ou +2 (3)"][x])
+    with c4:
+        consistencia = st.selectbox("Consistência", options=[0, 1, 2], format_func=lambda x: ["Firme (0)", "Média (1)", "Amolecida (2)"][x])
+    with c5:
+        posicao = st.selectbox("Posição", options=[0, 1, 2], format_func=lambda x: ["Posterior (0)", "Média (1)", "Anterior (2)"][x])
+
+    score_bishop = dilatacao + apagamento + altura + consistencia + posicao
+    st.metric("Score de Bishop Total", f"{score_bishop}/13")
+
+    # --- 3. ESCORE DE MALINAS ---
+    st.header("3. Escore de Malinas")
+    
+    m1, m2, m3 = st.columns(3)
+    with m1:
+        m_paridade = st.selectbox("Paridade (Malinas)", [0, 1, 2], format_func=lambda x: ["1 parto (0)", "2 partos (1)", "≥3 partos (2)"][x])
+        m_duracao = st.selectbox("Duração Trabalho de Parto", [0, 1, 2], format_func=lambda x: ["< 3h (0)", "3-5h (1)", "> 6h (2)"][x])
+    with m2:
+        m_membrana = st.selectbox("Membranas", [0, 1, 2], format_func=lambda x: ["Íntegras (0)", "Rotas recent. (1)", "Rotas >1h (2)"][x])
+        m_distancia = st.selectbox("Dilatação/Descida", [0, 1, 2], format_func=lambda x: ["Alta/Fechada (0)", "Média (1)", "Baixa/Completa (2)"][x])
+    with m3:
+        score_malinas = m_paridade + m_duracao + m_membrana + m_distancia
+        st.metric("Score de Malinas", score_malinas)
+        if score_malinas < 5:
+            st.success("Malinas: Transporte seguro")
+        elif score_malinas < 10:
+            st.warning("Malinas: Atenção no transporte")
+        else:
+            st.error("Malinas: Parto Iminente")
+
+    st.markdown("---")
+
+    # --- 4. CARDIOTOCOGRAFIA E INDICAÇÕES ---
+    st.header("4. Avaliação Fetal e Indicações")
+    col_fetal, col_indica = st.columns(2)
+
+    with col_fetal:
+        st.subheader("Cardiotocografia (CTG)")
+        ctg_class = st.radio("Classificação NICHD", 
+            ("Categoria I (Normal)", "Categoria II (Indeterminado)", "Categoria III (Anormal)"))
+        liquido = st.selectbox("Líquido Amniótico", ["Claro", "Meconial Fluido", "Meconial Espesso"])
+
+    with col_indica:
+        st.subheader("Fatores de Risco / Indicações")
+        indicacoes_abs = st.multiselect("Indicações Absolutas/Relativas", 
+            ["Nenhuma", "Placenta Prévia Total", "Apresentação Pélvica/Córmica", 
+             "Iteratividade (2+ cesáreas)", "Herpes Genital Ativo", 
+             "Desproporção Cefalopélvica (DCP)", "Sofrimento Fetal Agudo", 
+             "Preeclampsia Grave / Eclampsia", "HIV Carga Viral Desconhecida/>1000"])
+
+    # --- 5. RELATÓRIO FINAL ---
+    st.markdown("---")
+    if st.button("GERAR RELATÓRIO FINAL", type="primary"):
+        
+        # Lógica de Sugestão
+        sugestao = "Avaliar Individualmente"
+        cor_box = "blue"
+        
+        if "Categoria III (Anormal)" in ctg_class or "Sofrimento Fetal Agudo" in indicacoes_abs:
+            sugestao = "INDICAÇÃO DE CESÁREA DE EMERGÊNCIA (Sofrimento Fetal)"
+            cor_box = "red"
+        elif len([i for i in indicacoes_abs if i != "Nenhuma"]) > 0:
+            sugestao = "INDICAÇÃO DE CESÁREA (Fatores Materno/Fetais)"
+            cor_box = "orange"
+        elif score_bishop < 6 and ig_final_semanas >= 41:
+            sugestao = "Colo Desfavorável. Avaliar Maturação/Indução se indicação de parto."
+            cor_box = "yellow"
+        elif score_bishop >= 6:
+            sugestao = "Favorável ao Parto Vaginal / Indução facilitada"
+            cor_box = "green"
+
+        # Exibição do Relatório
+        st.markdown(f"""
+        ### 📄 Relatório de Admissão Obstétrica
+        **Data:** {datetime.now().strftime('%d/%m/%Y %H:%M')}
+        
+        **Paciente:** {nome} | **Idade:** {idade} anos
+        **Histórico:** G{gestacoes} P{partos_normais} C{partos_cesareos} A{abortos}
+        
+        **Datação:**
+        * DUM: {dum.strftime('%d/%m/%Y')} -> IG: {ig_sem}s {ig_dias}d (DPP: {dpp_calc.strftime('%d/%m/%Y')})
+        * USG (DPP Eco): {dpp_eco.strftime('%d/%m/%Y')} -> IG Eco: {ig_sem_eco}s {ig_dias_eco}d
+        
+        ---
+        #### 📊 Índices
+        * **Bishop:** {score_bishop} ({'Desfavorável' if score_bishop < 6 else 'Favorável'})
+        * **Malinas:** {score_malinas}
+        * **CTG:** {ctg_class}
+        * **Riscos:** {', '.join(indicacoes_abs)}
+        
+        ---
+        ### 🎯 Conclusão Sugerida
+        """)
+        
+        if cor_box == "red":
+            st.error(sugestao)
+        elif cor_box == "orange":
+            st.warning(sugestao)
+        elif cor_box == "green":
+            st.success(sugestao)
+        else:
+            st.info(sugestao)
+
+        st.text_area("Conduta Médica", height=100)
+        st.caption("CesaSafe App - Apoio à Decisão Clínica")
+
+if __name__ == "__main__":
+    main()
