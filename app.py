@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date, timedelta
 
 # Configuração da Página
 st.set_page_config(page_title="ObstetriCalc: Apoio à Decisão", page_icon="👶", layout="wide")
@@ -50,7 +50,8 @@ def main():
     
     tipo_calculo = st.radio("Método de Datação:", ("Pela DUM", "Pela USG (DPP Eco)"), horizontal=True)
     
-    ig_semanas = 0 # Variável final usada no resto do app
+    ig_semanas = 0 # Variável inicial
+    ig_dias = 0    # Variável inicial
     
     col_data1, col_data2 = st.columns(2)
     
@@ -83,8 +84,9 @@ def main():
         with col_data2:
             st.metric("IG (USG)", f"{ig_semanas}s e {ig_dias}d")
             st.caption("Cálculo baseado na DPP informada.")
-    
-st.markdown("---")
+
+    st.markdown("---")
+
     # --- 2. ÍNDICE DE BISHOP (Maturação Cervical) ---
     st.header("2. Índice de Bishop")
     st.caption("Avaliação para sucesso de indução vs. Cesárea")
@@ -172,7 +174,7 @@ st.markdown("---")
         **Data/Hora:** {datetime.now().strftime('%d/%m/%Y %H:%M')}
         
         **Paciente:** {nome} | **Idade:** {idade} anos | **IG:** {ig_semanas}s {ig_dias}d
-        **Histórico:** {paridade}, {cesareas_anteriores} cesárea(s) prévia(s).
+        **Histórico:** G{gestacoes} P{partos_normais} C{partos_cesareos} A{abortos}
         
         ---
         #### 📊 Índices Calculados
