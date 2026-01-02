@@ -52,39 +52,56 @@ def main():
     # LINHA A: DUM -> IG -> DPP
     col_dum, col_ig_dum, col_dpp_dum = st.columns(3)
     
+    # Variáveis iniciais (caso não preencha)
+    ig_sem, ig_dias = 0, 0
+    dpp_str = "---"
+    ig_str = "---"
+    dum_str = "Não informada"
+
     with col_dum:
-        dum = st.date_input("DUM (Data Última Menstruação)", value=date.today())
+        # value=None deixa vazio. format muda para Dia/Mês/Ano
+        dum = st.date_input("DUM (Data Última Menstruação)", value=None, format="DD/MM/YYYY")
     
-    # Cálculo automático pela DUM
-    dias_gest = (date.today() - dum).days
-    if dias_gest < 0: dias_gest = 0
-    ig_sem = dias_gest // 7
-    ig_dias = dias_gest % 7
-    dpp_calc = dum + timedelta(days=280)
+    if dum:
+        # Cálculo só acontece se DUM for preenchida
+        dum_str = dum.strftime('%d/%m/%Y')
+        dias_gest = (date.today() - dum).days
+        if dias_gest < 0: dias_gest = 0
+        ig_sem = dias_gest // 7
+        ig_dias = dias_gest % 7
+        dpp_calc = dum + timedelta(days=280)
+        dpp_str = dpp_calc.strftime('%d/%m/%Y')
+        ig_str = f"{ig_sem}s e {ig_dias}d"
 
     with col_ig_dum:
-        st.metric("IG (pela DUM)", f"{ig_sem}s e {ig_dias}d")
+        st.metric("IG (pela DUM)", ig_str)
     with col_dpp_dum:
-        st.metric("DPP (Provável)", dpp_calc.strftime('%d/%m/%Y'))
+        st.metric("DPP (Provável)", dpp_str)
 
     # LINHA B: DPPeco -> IGeco
     col_eco, col_ig_eco, col_vazio = st.columns(3)
     
+    # Variáveis iniciais USG
+    ig_sem_eco, ig_dias_eco = 0, 0
+    ig_eco_str = "---"
+    dpp_eco_str = "Não informada"
+
     with col_eco:
-        dpp_eco = st.date_input("DPP pela 1ª USG (DPP Eco)", value=date.today())
+        dpp_eco = st.date_input("DPP pela 1ª USG (DPP Eco)", value=None, format="DD/MM/YYYY")
     
-    # Cálculo automático pela USG
-    dt_concepcao_eco = dpp_eco - timedelta(days=280)
-    dias_gest_eco = (date.today() - dt_concepcao_eco).days
-    if dias_gest_eco < 0: dias_gest_eco = 0
-    ig_sem_eco = dias_gest_eco // 7
-    ig_dias_eco = dias_gest_eco % 7
+    if dpp_eco:
+        # Cálculo só acontece se USG for preenchida
+        dpp_eco_str = dpp_eco.strftime('%d/%m/%Y')
+        dt_concepcao_eco = dpp_eco - timedelta(days=280)
+        dias_gest_eco = (date.today() - dt_concepcao_eco).days
+        if dias_gest_eco < 0: dias_gest_eco = 0
+        ig_sem_eco = dias_gest_eco // 7
+        ig_dias_eco = dias_gest_eco % 7
+        ig_eco_str = f"{ig_sem_eco}s e {ig_dias_eco}d"
 
     with col_ig_eco:
-        st.metric("IG (pela USG)", f"{ig_sem_eco}s e {ig_dias_eco}d")
+        st.metric("IG (pela USG)", ig_eco_str)
     
-    ig_final_semanas = ig_sem 
-
     st.markdown("---")
 
     # --- 2. ÍNDICE DE BISHOP ---
@@ -145,7 +162,7 @@ def main():
     st.markdown("---")
     if st.button("GERAR RELATÓRIO FINAL", type="primary"):
         
-        # --- LÓGICA DE INTELIGÊNCIA CLÍNICA (O "CÉREBRO" DO APP) ---
+        # --- LÓGICA DE INTELIGÊNCIA CLÍNICA ---
         analise_texto = []
 
         # 1. Análise Bishop
@@ -195,7 +212,7 @@ def main():
         ### 🏥 Parecer Clínico Automatizado
         **Data do Parecer:** {datetime.now().strftime('%d/%m/%Y %H:%M')}
         
-        **Identificação:** {nome} ({idade} anos) | **IG:** {ig_sem}s {ig_dias}d
+        **Identificação:** {nome} ({idade} anos)
         **Histórico:** G{gestacoes} P{partos_normais} C{partos_cesareos} A{abortos}
         """)
         
@@ -211,8 +228,20 @@ def main():
 
         st.markdown("---")
         st.markdown("#### 📝 Detalhamento dos Dados Coletados")
+        
+        # Resumo das datas (verifica se foram preenchidas)
+        if dum:
+            texto_dum = f"DUM: {dum_str} (IG: {ig_str})"
+        else:
+            texto_dum = "DUM: Não informada"
+        
+        if dpp_eco:
+            texto_usg = f"USG (DPP Eco): {dpp_eco_str} (IG: {ig_eco_str})"
+        else:
+            texto_usg = "USG: Não informada"
+
         st.markdown(f"""
-        * **Datação:** DUM {dum.strftime('%d/%m')} (DPP {dpp_calc.strftime('%d/%m')}) | USG DPP {dpp_eco.strftime('%d/%m')}
+        * **Datação:** {texto_dum} | {texto_usg}
         * **Bishop:** {score_bishop}
         * **Malinas:** {score_malinas}
         * **Vitalidade:** {ctg_class} | LA: {liquido}
