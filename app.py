@@ -21,26 +21,33 @@ def main():
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 1: DADOS CLÍNICOS, OBSTÉTRICOS E DATAÇÃO (UNIFICADOS)
+    # SEÇÃO 1: IDENTIFICAÇÃO
     # ==========================================
-    st.header("1. Dados Clínicos e Obstétricos")
+    st.header("1. Identificação")
     
-    # --- Identificação ---
-    c_dados1, c_dados2 = st.columns([2, 1])
-    with c_dados1:
+    c_ident1, c_ident2 = st.columns([2, 1])
+    with c_ident1:
         nome = st.text_input("Nome da Paciente")
-    with c_dados2:
-        idade = st.number_input("Idade Materna (anos)", min_value=10, max_value=60, value=25)
+    with c_ident2:
+        # value=None deixa o campo vazio inicialmente
+        idade = st.number_input("Idade Materna (anos)", min_value=10, max_value=60, value=None, step=1, placeholder="Digite a idade")
 
-    # --- Histórico Obstétrico (G P A) ---
-    st.markdown("###### Histórico Obstétrico")
+    st.markdown("---")
+
+    # ==========================================
+    # SEÇÃO 2: HISTÓRICO OBSTÉTRICO E DATAÇÃO
+    # ==========================================
+    st.header("2. Histórico Obstétrico")
+    
+    # --- G P C A ---
     col_g, col_pn, col_pc, col_a = st.columns(4)
     with col_g:
         gestacoes = st.number_input("G (Gestações)", min_value=1, value=1)
     with col_pn:
         partos_normais = st.number_input("PN (Partos Normais)", min_value=0, value=0)
     with col_pc:
-        partos_cesareos = st.number_input("PC (Cesáreas)", min_value=0, value=0)
+        # Rótulo alterado conforme solicitado
+        partos_cesareos = st.number_input("PC (Partos Cesáreos)", min_value=0, value=0)
     with col_a:
         abortos = st.number_input("A (Abortos)", min_value=0, value=0)
 
@@ -54,8 +61,7 @@ def main():
         )
 
     st.markdown("") # Espaçamento visual
-    st.markdown("###### Datação da Gestação") # Título menor apenas para organizar visualmente
-
+    
     # --- CÁLCULO DUM ---
     col_dum, col_ig_dum, col_dpp_dum = st.columns(3)
     
@@ -81,7 +87,8 @@ def main():
     with col_ig_dum:
         st.metric("IG (pela DUM)", ig_str)
     with col_dpp_dum:
-        st.metric("DPP (Provável)", dpp_str)
+        # Rótulo alterado conforme solicitado
+        st.metric("DPP (pela DUM)", dpp_str)
 
     # --- CÁLCULO USG ---
     col_eco, col_ig_eco, col_vazio = st.columns(3)
@@ -105,13 +112,12 @@ def main():
     with col_ig_eco:
         st.metric("IG (pela USG)", ig_eco_str)
     
-    # Separador para a próxima seção (Exame Físico)
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 2: AVALIAÇÃO FETAL
+    # SEÇÃO 3: AVALIAÇÃO FETAL
     # ==========================================
-    st.header("2. Avaliação Fetal Física")
+    st.header("3. Avaliação Fetal Física")
     
     col_au, col_bcf, col_sit, col_apres = st.columns(4)
     
@@ -130,9 +136,9 @@ def main():
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 3: BISHOP
+    # SEÇÃO 4: BISHOP
     # ==========================================
-    st.header("3. Índice de Bishop")
+    st.header("4. Índice de Bishop")
     st.caption("Avaliação do colo uterino para predição de sucesso na indução do parto vaginal.")
     
     c1, c2, c3, c4, c5 = st.columns(5)
@@ -152,9 +158,9 @@ def main():
     st.metric("Score de Bishop Total", f"{score_bishop}/13 pontos")
 
     # ==========================================
-    # SEÇÃO 4: MALINAS
+    # SEÇÃO 5: MALINAS
     # ==========================================
-    st.header("4. Escore de Malinas")
+    st.header("5. Escore de Malinas")
     st.caption("Avaliação de risco para parto iminente (transporte).")
     
     m1, m2, m3 = st.columns(3)
@@ -171,9 +177,9 @@ def main():
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 5: CTG E RISCOS
+    # SEÇÃO 6: CTG E RISCOS
     # ==========================================
-    st.header("5. Avaliação Fetal e Fatores de Risco")
+    st.header("6. Avaliação Fetal e Fatores de Risco")
     col_fetal, col_indica = st.columns(2)
 
     with col_fetal:
@@ -199,14 +205,18 @@ def main():
         analise_texto = []
 
         # --- LÓGICA IDADE MATERNA ---
-        if idade < 16:
-            analise_texto.append(f"⚠️ **Idade Materna ({idade} anos):** Adolescência precoce. Risco biológico aumentado para Desproporção Cefalopélvica (DCP) por imaturidade pélvica, além de risco para síndromes hipertensivas.")
-        elif idade < 20:
-            analise_texto.append(f"ℹ️ **Idade Materna ({idade} anos):** Gravidez na adolescência. Monitorar riscos de síndromes hipertensivas e prematuridade.")
-        elif idade >= 40:
-             analise_texto.append(f"⚠️ **Idade Materna Avançada ({idade} anos):** Alto risco para comorbidades (HAS, Diabetes), placentação anômala e óbito fetal. Vigilância rigorosa.")
-        elif idade >= 35:
-             analise_texto.append(f"ℹ️ **Idade Materna ({idade} anos):** Idade avançada. Risco aumentado para diabetes gestacional e hipertensão.")
+        # Verifica se a idade foi preenchida (não é None)
+        if idade is not None:
+            if idade < 16:
+                analise_texto.append(f"⚠️ **Idade Materna ({idade} anos):** Adolescência precoce. Risco biológico aumentado para Desproporção Cefalopélvica (DCP) por imaturidade pélvica, além de risco para síndromes hipertensivas.")
+            elif idade < 20:
+                analise_texto.append(f"ℹ️ **Idade Materna ({idade} anos):** Gravidez na adolescência. Monitorar riscos de síndromes hipertensivas e prematuridade.")
+            elif idade >= 40:
+                analise_texto.append(f"⚠️ **Idade Materna Avançada ({idade} anos):** Alto risco para comorbidades (HAS, Diabetes), placentação anômala e óbito fetal. Vigilância rigorosa.")
+            elif idade >= 35:
+                analise_texto.append(f"ℹ️ **Idade Materna ({idade} anos):** Idade avançada. Risco aumentado para diabetes gestacional e hipertensão.")
+        else:
+            analise_texto.append("⚠️ **Idade Materna:** Não informada. Recomenda-se preencher para melhor avaliação de riscos.")
 
         # --- Lógica de Análise Fetal (BCF 120-160) ---
         if bcf < 120:
@@ -259,7 +269,7 @@ def main():
         ### 🏥 Parecer Clínico Automatizado - CesaSafe
         **Data/Hora:** {datetime.now().strftime('%d/%m/%Y %H:%M')}
         
-        **Identificação:** {nome} ({idade} anos)
+        **Identificação:** {nome if nome else 'Não identificada'} ({idade if idade else 'Idade não informada'} anos)
         **Obstetrícia:** G{gestacoes} P{partos_normais} C{partos_cesareos} A{abortos}
         """)
         
