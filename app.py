@@ -21,19 +21,19 @@ def main():
     st.markdown("---")
 
     # ==========================================
-    # SEÇÃO 1: DADOS CLÍNICOS E DATAÇÃO
+    # SEÇÃO 1: DADOS CLÍNICOS, OBSTÉTRICOS E DATAÇÃO (UNIFICADOS)
     # ==========================================
     st.header("1. Dados Clínicos e Obstétricos")
     
-    # Linha 1: Nome e Idade
+    # --- Identificação ---
     c_dados1, c_dados2 = st.columns([2, 1])
     with c_dados1:
         nome = st.text_input("Nome da Paciente")
     with c_dados2:
         idade = st.number_input("Idade Materna (anos)", min_value=10, max_value=60, value=25)
 
-    # Linha 2: Histórico Obstétrico (G P A)
-    st.markdown("**Histórico Obstétrico:**")
+    # --- Histórico Obstétrico (G P A) ---
+    st.markdown("###### Histórico Obstétrico")
     col_g, col_pn, col_pc, col_a = st.columns(4)
     with col_g:
         gestacoes = st.number_input("G (Gestações)", min_value=1, value=1)
@@ -53,11 +53,10 @@ def main():
             ["Menos de 2 anos (< 24 meses)", "Mais de 2 anos (≥ 24 meses)"]
         )
 
-    st.markdown("---")
-    
-    # --- DATAÇÃO ---
-    st.subheader("📅 Datação da Gestação")
+    st.markdown("") # Espaçamento visual
+    st.markdown("###### Datação da Gestação") # Título menor apenas para organizar visualmente
 
+    # --- CÁLCULO DUM ---
     col_dum, col_ig_dum, col_dpp_dum = st.columns(3)
     
     # Variáveis iniciais
@@ -84,7 +83,7 @@ def main():
     with col_dpp_dum:
         st.metric("DPP (Provável)", dpp_str)
 
-    # LINHA B: DPPeco -> IGeco
+    # --- CÁLCULO USG ---
     col_eco, col_ig_eco, col_vazio = st.columns(3)
     
     ig_sem_eco, ig_dias_eco = 0, 0
@@ -106,6 +105,7 @@ def main():
     with col_ig_eco:
         st.metric("IG (pela USG)", ig_eco_str)
     
+    # Separador para a próxima seção (Exame Físico)
     st.markdown("---")
 
     # ==========================================
