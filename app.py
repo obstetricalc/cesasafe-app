@@ -1,73 +1,7 @@
-import streamlit as st
-import pandas as pd
-import math
-from datetime import datetime, date, timedelta
-
 # ==========================================
-# FUNDAÇÃO: CONFIGURAÇÃO DA PÁGINA
-# ==========================================
-st.set_page_config(
-    page_title="CesaSafe: Apoio à Decisão", 
-    page_icon="🤰", 
-    layout="wide"
-)
-
-# ==========================================
-# INÍCIO DO APLICATIVO PRINCIPAL
-# ==========================================
-def main():
-    # --- CABEÇALHO ---
-    st.title("🤰 CesaSafe: Sistema de Apoio à Decisão Obstétrica")
-    st.markdown("""
-    **Aviso Legal:** Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. 
-    A decisão clínica final é de responsabilidade exclusiva do médico obstetra.
-    """)
-    st.markdown("---")
-
+    # BLOCO 2: HISTÓRICO OBSTÉTRICO E RISCOS
     # ==========================================
-    # BLOCO 1: IDENTIFICAÇÃO
-    # ==========================================
-    st.header("1. Identificação")
-    
-    hoje = date.today()
-    data_minima = date(hoje.year - 60, 1, 1)
-    data_maxima = hoje
-    
-    c1, c2, c3 = st.columns([2, 1, 1])
-    
-    with c1:
-        nome = st.text_input("Nome da Paciente", placeholder="Digite o nome completo")
-        
-    with c2:
-        data_nasc = st.date_input("Data de Nascimento", value=None, min_value=data_minima, max_value=data_maxima, format="DD/MM/YYYY")
-        
-    with c3:
-        idade = None
-        if data_nasc:
-            idade = hoje.year - data_nasc.year - ((hoje.month, hoje.day) < (data_nasc.month, data_nasc.day))
-            st.metric("Idade", f"{idade} anos")
-
-    c4, c5, c6 = st.columns(3)
-    
-    with c4:
-        peso_kg = st.number_input("Peso (kg)", min_value=30.0, max_value=250.0, value=None, step=0.1, format="%.1f", placeholder="Ex: 70.5")
-        
-    with c5:
-        altura_m = st.number_input("Altura (metros)", min_value=1.00, max_value=2.50, value=None, step=0.01, format="%.2f", placeholder="Ex: 1.60")
-        
-    with c6:
-        imc = None
-        if peso_kg is not None and altura_m is not None and altura_m > 0:
-            imc = peso_kg / (altura_m ** 2)
-            st.metric("IMC", f"{imc:.1f} kg/m²")
-
-    st.markdown("---")
-    # --- FIM DO BLOCO 1 ---
-
-    # ==========================================
-    # BLOCO 2: HISTÓRICO OBSTÉTRICO
-    # ==========================================
-    st.header("2. Histórico Obstétrico")
+    st.header("2. Histórico Obstétrico e Fatores de Risco")
     
     # --- Gestas e Paridade ---
     col_g, col_pn, col_pc, col_a = st.columns(4)
@@ -89,7 +23,36 @@ def main():
             ["Menos de 2 anos (< 24 meses)", "Mais de 2 anos (≥ 24 meses)"]
         )
 
-    st.markdown("") 
+    st.markdown("---") 
+    
+    # --- Comorbidades e Fatores de Risco ---
+    st.subheader("Avaliação de Riscos")
+    col_comorb, col_obst = st.columns(2)
+    
+    with col_comorb:
+        st.markdown("**Comorbidades (Pré-existentes)**")
+        # Essa variável 'hipertensao' será vital para o cálculo do VBAC depois
+        hipertensao = st.checkbox("Hipertensão Crônica Tratada")
+        diabetes_previa = st.checkbox("Diabetes Mellitus Prévia")
+        cardiopatia = st.checkbox("Cardiopatia Grave")
+        
+    with col_obst:
+        st.markdown("**Fatores de Risco Obstétrico**")
+        diabetes_gest = st.checkbox("Diabetes Gestacional")
+        pre_eclampsia = st.checkbox("Pré-eclâmpsia / Eclâmpsia")
+        
+        outros_fatores = st.multiselect(
+            "Outras Intercorrências na Gestação:",
+            ["Nenhum", 
+             "Placenta Prévia Total", 
+             "Herpes Genital Ativo", 
+             "HIV (Carga Viral >1000 ou Desconhecida)", 
+             "Desproporção Cefalopélvica (DCP)", 
+             "Rotura Uterina Prévia",
+             "Parto Prematuro Anterior"]
+        )
+
+    st.markdown("---")
     
     # --- Datação da Gestação (DUM) ---
     st.subheader("Datação da Gestação")
@@ -128,9 +91,3 @@ def main():
 
     st.markdown("---")
     # --- FIM DO BLOCO 2 ---
-
-# ==========================================
-# COMANDO DE EXECUÇÃO
-# ==========================================
-if __name__ == "__main__":
-    main()
