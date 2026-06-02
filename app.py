@@ -1,4 +1,69 @@
+import streamlit as st
+import pandas as pd
+import math
+from datetime import datetime, date, timedelta
+
 # ==========================================
+# FUNDAÇÃO: CONFIGURAÇÃO DA PÁGINA
+# ==========================================
+st.set_page_config(
+    page_title="CesaSafe: Apoio à Decisão", 
+    page_icon="🤰", 
+    layout="wide"
+)
+
+# ==========================================
+# INÍCIO DO APLICATIVO PRINCIPAL
+# ==========================================
+def main():
+    # --- CABEÇALHO ---
+    st.title("🤰 CesaSafe: Sistema de Apoio à Decisão Obstétrica")
+    st.markdown("""
+    **Aviso Legal:** Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. 
+    A decisão clínica final é de responsabilidade exclusiva do médico obstetra.
+    """)
+    st.markdown("---")
+
+    # ==========================================
+    # BLOCO 1: IDENTIFICAÇÃO
+    # ==========================================
+    st.header("1. Identificação")
+    
+    hoje = date.today()
+    data_minima = date(hoje.year - 60, 1, 1)
+    data_maxima = hoje
+    
+    c1, c2, c3 = st.columns([2, 1, 1])
+    
+    with c1:
+        nome = st.text_input("Nome da Paciente", placeholder="Digite o nome completo")
+        
+    with c2:
+        data_nasc = st.date_input("Data de Nascimento", value=None, min_value=data_minima, max_value=data_maxima, format="DD/MM/YYYY")
+        
+    with c3:
+        idade = None
+        if data_nasc:
+            idade = hoje.year - data_nasc.year - ((hoje.month, hoje.day) < (data_nasc.month, data_nasc.day))
+            st.metric("Idade", f"{idade} anos")
+
+    c4, c5, c6 = st.columns(3)
+    
+    with c4:
+        peso_kg = st.number_input("Peso (kg)", min_value=30.0, max_value=250.0, value=None, step=0.1, format="%.1f", placeholder="Ex: 70.5")
+        
+    with c5:
+        altura_m = st.number_input("Altura (metros)", min_value=1.00, max_value=2.50, value=None, step=0.01, format="%.2f", placeholder="Ex: 1.60")
+        
+    with c6:
+        imc = None
+        if peso_kg is not None and altura_m is not None and altura_m > 0:
+            imc = peso_kg / (altura_m ** 2)
+            st.metric("IMC", f"{imc:.1f} kg/m²")
+
+    st.markdown("---")
+
+    # ==========================================
     # BLOCO 2: HISTÓRICO OBSTÉTRICO E RISCOS
     # ==========================================
     st.header("2. Histórico Obstétrico e Fatores de Risco")
@@ -25,65 +90,5 @@
 
     st.markdown("---") 
     
-    # --- Comorbidades e Fatores de Risco ---
-    st.subheader("Comorbidades e Fatores de Risco")
-    col_risco1, col_risco2 = st.columns(2)
-    
-    with col_risco1:
-        st.markdown("**Condições Crônicas / Gestacionais**")
-        # Essa variável 'hipertensao' será usada automaticamente na calculadora VBAC depois!
-        hipertensao = st.checkbox("Hipertensão Crônica Tratada")
-        diabetes = st.checkbox("Diabetes (Prévia ou Gestacional)")
-        pre_eclampsia = st.checkbox("Pré-eclâmpsia / Eclâmpsia na gestação atual")
-        
-    with col_risco2:
-        st.markdown("**Outras Indicações e Fatores Clínicos**")
-        outros_fatores = st.multiselect(
-            "Selecione se houver:",
-            ["Nenhum", 
-             "Placenta Prévia Total", 
-             "Herpes Genital Ativo", 
-             "HIV (Carga Viral Desconhecida ou >1000)", 
-             "Desproporção Cefalopélvica (DCP)", 
-             "Rotura Uterina Prévia"]
-        )
-
-    st.markdown("---")
-    
-    # --- Datação da Gestação (DUM) ---
-    st.subheader("Datação da Gestação")
-    col_dum, col_ig_dum, col_dpp_dum = st.columns(3)
-    
-    with col_dum:
-        dum = st.date_input("DUM (Última Menstruação)", value=None, format="DD/MM/YYYY")
-    
-    with col_ig_dum:
-        if dum:
-            dias_gest = (hoje - dum).days 
-            if dias_gest < 0: dias_gest = 0
-            ig_sem = dias_gest // 7
-            ig_dias = dias_gest % 7
-            st.metric("IG (pela DUM)", f"{ig_sem} sem e {ig_dias} dias")
-            
-    with col_dpp_dum:
-        if dum:
-            dpp_calc = dum + timedelta(days=280)
-            st.metric("DPP (pela DUM)", dpp_calc.strftime('%d/%m/%Y'))
-
-    # --- Datação da Gestação (USG) ---
-    col_eco, col_ig_eco, col_vazia = st.columns(3)
-    
-    with col_eco:
-        dpp_eco = st.date_input("DPP pela 1ª USG (Eco)", value=None, format="DD/MM/YYYY")
-    
-    with col_ig_eco:
-        if dpp_eco:
-            dt_concepcao_eco = dpp_eco - timedelta(days=280)
-            dias_gest_eco = (hoje - dt_concepcao_eco).days
-            if dias_gest_eco < 0: dias_gest_eco = 0
-            ig_sem_eco = dias_gest_eco // 7
-            ig_dias_eco = dias_gest_eco % 7
-            st.metric("IG (pela USG)", f"{ig_sem_eco} sem e {ig_dias_eco} dias")
-
-    st.markdown("---")
-    # --- FIM DO BLOCO 2 ---
+    # --- Comorbidades e Fatores de Risco (VERSÃO ANTERIOR RESTAURADA) ---
+    st
