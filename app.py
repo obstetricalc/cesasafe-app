@@ -1,77 +1,84 @@
-import streamlit as st
-import pandas as pd
-import math
-from datetime import datetime, date, timedelta
-
 # ==========================================
-# FUNDAÇÃO: CONFIGURAÇÃO DA PÁGINA
-# ==========================================
-st.set_page_config(
-    page_title="CesaSafe: Apoio à Decisão", 
-    page_icon="🤰", 
-    layout="wide"
-)
-
-# ==========================================
-# INÍCIO DO APLICATIVO PRINCIPAL
-# ==========================================
-def main():
-    # --- CABEÇALHO ---
-    st.title("🤰 CesaSafe: Sistema de Apoio à Decisão Obstétrica")
-    st.markdown("""
-    **Aviso Legal:** Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. 
-    A decisão clínica final é de responsabilidade exclusiva do médico obstetra.
-    """)
-    st.markdown("---")
-
+    # BLOCO 2: HISTÓRICO OBSTÉTRICO
     # ==========================================
-    # BLOCO 1: IDENTIFICAÇÃO
-    # ==========================================
-    st.header("1. Identificação")
+    st.header("2. Histórico Obstétrico")
     
-    # Pegamos a data atual do sistema para basear nossos cálculos
-    hoje = date.today()
-    # Criamos o limite mínimo (60 anos para trás a partir do dia 1º de janeiro) e máximo (hoje)
-    data_minima = date(hoje.year - 60, 1, 1)
-    data_maxima = hoje
-    
-    # --- Primeira Linha: Dados Pessoais ---
-    c1, c2, c3 = st.columns([2, 1, 1])
-    
-    with c1:
-        nome = st.text_input("Nome da Paciente", placeholder="Digite o nome completo")
-        
-    with c2:
-        data_nasc = st.date_input("Data de Nascimento", value=None, min_value=data_minima, max_value=data_maxima, format="DD/MM/YYYY")
-        
-    with c3:
-        idade = None
-        # A idade só vai aparecer na tela SE a data de nascimento for preenchida
-        if data_nasc:
-            idade = hoje.year - data_nasc.year - ((hoje.month, hoje.day) < (data_nasc.month, data_nasc.day))
-            st.metric("Idade", f"{idade} anos")
+    # --- Gestas e Paridade ---
+    col_g, col_pn, col_pc, col_a = st.columns(4)
+    with col_g:
+        gestacoes = st.number_input("G (Gestações)", min_value=1, value=1, step=1)
+    with col_pn:
+        partos_normais = st.number_input("PN (Partos Normais)", min_value=0, value=0, step=1)
+    with col_pc:
+        partos_cesareos = st.number_input("PC (Partos Cesáreos)", min_value=0, value=0, step=1)
+    with col_a:
+        abortos = st.number_input("A (Abortos)", min_value=0, value=0, step=1)
 
-    # --- Segunda Linha: Antropometria ---
-    c4, c5, c6 = st.columns(3)
+    # --- Alerta Interativo de Parto Cesáreo Anterior ---
+    tempo_cesarea = None
+    if partos_cesareos > 0:
+        st.warning("⚠️ Paciente com histórico de Parto Cesáreo Anterior")
+        tempo_cesarea = st.radio(
+            "Há quanto tempo ocorreu o último parto cesáreo?",
+            ["Menos de 2 anos (< 24 meses)", "Mais de 2 anos (≥ 24 meses)"]
+        )
+
+    st.markdown("") # Um pequeno espaço para "respirar" na tela
     
-    with c4:
-        peso_kg = st.number_input("Peso (kg)", min_value=30.0, max_value=250.0, value=None, step=0.1, format="%.1f", placeholder="Ex: 70.5")
-        
-    with c5:
-        altura_m = st.number_input("Altura (metros)", min_value=1.00, max_value=2.50, value=None, step=0.01, format="%.2f", placeholder="Ex: 1.60")
-        
-    with c6:
-        imc = None
-        # O IMC só vai aparecer na tela SE o peso e a altura forem preenchidos corretamente
-        if peso_kg is not None and altura_m is not None and altura_m > 0:
-            imc = peso_kg / (altura_m ** 2)
-            st.metric("IMC", f"{imc:.1f} kg/m²")
+    # --- Datação da Gestação (DUM) ---
+    st.subheader("Datação da Gestação")
+    col_dum, col_ig_dum, col_dpp_dum = st.columns(3)
+    
+    with col_dum:
+        dum = st.date_input("DUM (Última Menstruação)", value=None, format="DD/MM/YYYY")
+    
+    with col_ig_dum:
+        # A IG só aparece se a DUM for preenchida
+        if dum:
+            dias_gest = (hoje - dum).days # Usa a variável 'hoje' criada no Bloco 1
+            if dias_gest >= 0:
+                ig_sem = dias_gest // 7
+                ig_dias = dias_gest % 7
+                st.metric("IG (pela DUM)", f"{ig_sem} sem e {ig_dias} dias")
+            else:
+                st.metric("IG (pela DUM)", "Data no futuro")
+        else:
+            st.metric("IG (pela DUM)", "---")
+            
+    with col_dpp_dum:
+        # A DPP (280 dias após a DUM) só aparece se a DUM for preenchida
+        if dum:
+            dpp_calc = dum + timedelta(days=280)
+            st.metric("DPP (pela DUM)", dpp_calc.strftime('%d/%m/%Y'))
+        else:
+            st.metric("DPP (pela DUM)", "---")
+
+    # --- Datação da Gestação (USG) ---
+    col_eco, col_ig_eco, col_dpp_eco = st.columns(3)
+    
+    with col_eco:
+        dpp_eco = st.date_input("DPP pela 1ª USG (Eco)", value=None, format="DD/MM/YYYY")
+    
+    with col_ig_eco:
+        if dpp_eco:
+            # Se temos a DPP da USG, calculamos de trás pra frente (DPP - 280 = dia da concepção)
+            dt_concepcao_eco = dpp_eco - timedelta(days=280)
+            dias_gest_eco = (hoje - dt_concepcao_eco).days
+            if dias_gest_eco >= 0:
+                ig_sem_eco = dias_gest_eco // 7
+                ig_dias_eco = dias_gest_eco % 7
+                st.metric("IG (pela USG)", f"{ig_sem_eco} sem e {ig_dias_eco} dias")
+            else:
+                st.metric("IG (pela USG)", "Data muito distante")
+        else:
+            st.metric("IG (pela USG)", "---")
+            
+    with col_dpp_eco:
+        # Apenas refletimos visualmente a DPP escolhida para manter a simetria
+        if dpp_eco:
+            st.metric("DPP (pela USG)", dpp_eco.strftime('%d/%m/%Y'))
+        else:
+            st.metric("DPP (pela USG)", "---")
 
     st.markdown("---")
-    # --- FIM DO BLOCO 1 ---
-
-# ==========================================
-# COMANDO DE EXECUÇÃO
-# ==========================================
-if __name__ == "__main__":
-    main()
+    # --- FIM DO BLOCO 2 ---
