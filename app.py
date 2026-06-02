@@ -1,10 +1,3 @@
-Fica muito mais elegante assim! Uma tela mais limpa, mostrando apenas as informações relevantes no momento certo, ajuda muito a evitar a poluição visual durante o plantão.
-
-Para fazer isso no Streamlit, basta removermos a regra `else` (senão) que exibia os traços `"---"`. Assim, o código entende que se o campo estiver vazio, ele não deve desenhar absolutamente nada naquela coluna. Também alterei o nome para apenas "IMC", como você pediu.
-
-Aqui está o código ajustado. Copie e cole por cima do seu arquivo atual para testar a mágica de aparecer e desaparecer:
-
-```python
 import streamlit as st
 import pandas as pd
 import math
@@ -82,5 +75,3 @@ def main():
 # ==========================================
 if __name__ == "__main__":
     main()
-
-```
