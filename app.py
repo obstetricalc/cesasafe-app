@@ -4,22 +4,59 @@ import math
 from datetime import datetime, date, timedelta
 
 # ==========================================
-# FUNÇÃO DE CÁLCULO VBAC (MFMU 2021)
+# FUNÇÃO DE CÁLCULO VBAC (Nova Versão IMC)
 # ==========================================
-def calcular_probabilidade_vbac(idade: int, peso_kg: float, altura_cm: float, 
-                                indicacao_parada: bool, pv_previo: bool, 
-                                vbac_previo: bool, hipertensao_cronica: bool) -> float:
-    ind_parada_val = 1 if indicacao_parada else 0
-    pv_previo_val = 1 if pv_previo else 0
-    vbac_previo_val = 1 if vbac_previo else 0
-    hipertensao_val = 1 if hipertensao_cronica else 0
+def calcular_vbac(idade, peso_kg, altura_cm, hipertensao=False, 
+                  parada_progressao=False, parto_vaginal_previo=False, vbac_previo=False):
+    """
+    Calculadora de Probabilidade de Sucesso do VBAC
+    Baseada no modelo MFMU / Grobman 2021
+    """
+    # 1. Converter altura para metros
+    altura_m = altura_cm / 100
 
-    w = (-5.952 - (0.023 * idade) - (0.024 * peso_kg) + (0.056 * altura_cm) 
-         - (0.597 * ind_parada_val) + (0.868 * pv_previo_val) 
-         + (1.869 * vbac_previo_val) - (0.966 * hipertensao_val))
+    # 2. Calcular IMC
+    imc = peso_kg / (altura_m ** 2)
 
-    probabilidade = (math.exp(w) / (1 + math.exp(w))) * 100
-    return round(probabilidade, 2)
+    # 3. Converter variáveis booleanas
+    hipertensao = int(hipertensao)
+    parada_progressao = int(parada_progressao)
+    parto_vaginal_previo = int(parto_vaginal_previo)
+    vbac_previo = int(vbac_previo)
+
+    # 4. Calcular escore linear (x)
+    x = (
+        3.302
+        - (0.043 * idade)
+        - (0.052 * imc)
+        + (0.832 * parto_vaginal_previo)
+        + (0.489 * vbac_previo)
+        - (0.622 * parada_progressao)
+        - (0.513 * hipertensao)
+    )
+
+    # 5. Aplicar função logística
+    probabilidade = 1 / (1 + math.exp(-x))
+
+    # 6. Converter para percentual
+    percentual = probabilidade * 100
+
+    # 7. Classificação opcional
+    if percentual < 40:
+        classificacao = "Baixa probabilidade"
+    elif percentual < 60:
+        classificacao = "Probabilidade intermediária"
+    elif percentual < 80:
+        classificacao = "Boa probabilidade"
+    else:
+        classificacao = "Alta probabilidade"
+
+    # 8. Retorno
+    return {
+        "IMC": round(imc, 2),
+        "Probabilidade_VBAC": round(percentual, 2),
+        "Classificacao": classificacao
+    }
 
 # ==========================================
 # CONFIGURAÇÃO DA PÁGINA
@@ -168,16 +205,16 @@ def main():
     # SEÇÃO 5: PREDIÇÃO DE SUCESSO DO VBAC
     # ==========================================
     st.header("5. Predição de Sucesso do VBAC (TOLAC)")
-    st.caption("Cálculo baseado no algoritmo MFMU (2021) aplicável a pacientes com parto cesáreo anterior.")
+    st.caption("Cálculo original MFMU (2021) aplicável a pacientes com parto cesáreo anterior.")
 
-    chance_sucesso_vbac = None
+    resultado_vbac = None
 
     if partos_cesareos > 0:
         col_v1, col_v2 = st.columns(2)
         with col_v1:
-            peso_vbac = st.number_input("Peso Materno Atual (kg)", min_value=30.0, max_value=200.0, value=70.0, step=0.1)
+            peso_vbac = st.number_input("Peso Pré-gestacional (kg)", min_value=30.0, max_value=200.0, value=70.0, step=0.1, help="Insira o peso materno de antes do início da gestação atual.")
             altura_vbac = st.number_input("Altura Materna (cm)", min_value=100.0, max_value=220.0, value=160.0, step=1.0)
-            hipertensao_vbac = st.checkbox("Paciente possui Hipertensão Crônica?")
+            hipertensao_vbac = st.checkbox("Paciente possui Hipertensão Crônica Tratada?")
             
         with col_v2:
             st.markdown("**Histórico Específico**")
@@ -186,14 +223,28 @@ def main():
             vbac_previo = st.checkbox("Já teve um VBAC (Parto Vaginal APÓS um parto cesáreo)?")
 
         if idade is not None:
-            chance_sucesso_vbac = calcular_probabilidade_vbac(
-                idade=idade, peso_kg=peso_vbac, altura_cm=altura_vbac,
-                indicacao_parada=indicacao_parada, pv_previo=pv_previo_vbac,
-                vbac_previo=vbac_previo, hipertensao_cronica=hipertensao_vbac
+            # Acionando a nova função
+            resultado_vbac = calcular_vbac(
+                idade=idade, 
+                peso_kg=peso_vbac, 
+                altura_cm=altura_vbac,
+                hipertensao=hipertensao_vbac,
+                parada_progressao=indicacao_parada, 
+                parto_vaginal_previo=pv_previo_vbac,
+                vbac_previo=vbac_previo
             )
-            st.info(f"📈 **Probabilidade Estimada de Sucesso (VBAC): {chance_sucesso_vbac}%**")
+            
+            # Exibindo os resultados do dicionário de forma visualmente agradável
+            st.success(f"📈 **Probabilidade Estimada de Sucesso (VBAC): {resultado_vbac['Probabilidade_VBAC']}%**")
+            
+            c_res1, c_res2 = st.columns(2)
+            with c_res1:
+                st.info(f"📊 **Classificação:** {resultado_vbac['Classificacao']}")
+            with c_res2:
+                st.info(f"⚖️ **IMC Pré-gestacional:** {resultado_vbac['IMC']}")
+                
         else:
-            st.warning("⚠️ Preencha a 'Idade Materna' na Seção 1 para ativar o cálculo da MFMU.")
+            st.warning("⚠️ Preencha a 'Idade Materna' na Seção 1 (Identificação) para ativar o cálculo da MFMU.")
     else:
         st.info("💡 Calculadora não aplicável: A paciente não possui histórico de partos cesáreos.")
 
@@ -260,11 +311,15 @@ def main():
             if tempo_cesarea == "Menos de 2 anos (< 24 meses)":
                 analise_texto.append("⚠️ **Intervalo Curto:** Risco elevado de rotura uterina em prova de TP.")
             
-            if chance_sucesso_vbac is not None:
-                if chance_sucesso_vbac >= 60.0:
-                    analise_texto.append(f"🟢 **Predição VBAC ({chance_sucesso_vbac}%):** Probabilidade favorável para o TOLAC.")
+            # Utilizando a variável dicionário resultado_vbac no relatório
+            if resultado_vbac is not None:
+                prob = resultado_vbac['Probabilidade_VBAC']
+                classif = resultado_vbac['Classificacao']
+                
+                if prob >= 60.0:
+                    analise_texto.append(f"🟢 **Predição VBAC ({prob}% - {classif}):** Probabilidade favorável para o TOLAC.")
                 else:
-                    analise_texto.append(f"🟡 **Predição VBAC ({chance_sucesso_vbac}%):** Probabilidade reduzida de sucesso. Reforçar aconselhamento sobre riscos versus benefícios.")
+                    analise_texto.append(f"🟡 **Predição VBAC ({prob}% - {classif}):** Probabilidade reduzida de sucesso. Reforçar aconselhamento sobre riscos versus benefícios.")
 
         if score_malinas >= 10:
             analise_texto.append("🔴 **ALERTA (Malinas ≥ 10):** Alto risco de parto no transporte.")
