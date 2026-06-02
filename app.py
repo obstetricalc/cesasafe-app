@@ -101,12 +101,10 @@ def main():
     with col_ig_dum:
         if dum:
             dias_gest = (hoje - dum).days 
-            if dias_gest >= 0:
-                ig_sem = dias_gest // 7
-                ig_dias = dias_gest % 7
-                st.metric("IG (pela DUM)", f"{ig_sem} sem e {ig_dias} dias")
-            else:
-                st.metric("IG (pela DUM)", "Data no futuro")
+            if dias_gest < 0: dias_gest = 0
+            ig_sem = dias_gest // 7
+            ig_dias = dias_gest % 7
+            st.metric("IG (pela DUM)", f"{ig_sem} sem e {ig_dias} dias")
             
     with col_dpp_dum:
         if dum:
@@ -123,12 +121,10 @@ def main():
         if dpp_eco:
             dt_concepcao_eco = dpp_eco - timedelta(days=280)
             dias_gest_eco = (hoje - dt_concepcao_eco).days
-            if dias_gest_eco >= 0:
-                ig_sem_eco = dias_gest_eco // 7
-                ig_dias_eco = dias_gest_eco % 7
-                st.metric("IG (pela USG)", f"{ig_sem_eco} sem e {ig_dias_eco} dias")
-            else:
-                st.metric("IG (pela USG)", "Data muito distante")
+            if dias_gest_eco < 0: dias_gest_eco = 0
+            ig_sem_eco = dias_gest_eco // 7
+            ig_dias_eco = dias_gest_eco % 7
+            st.metric("IG (pela USG)", f"{ig_sem_eco} sem e {ig_dias_eco} dias")
 
     st.markdown("---")
     # --- FIM DO BLOCO 2 ---
