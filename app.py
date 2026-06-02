@@ -1,3 +1,10 @@
+Fica muito mais elegante assim! Uma tela mais limpa, mostrando apenas as informações relevantes no momento certo, ajuda muito a evitar a poluição visual durante o plantão.
+
+Para fazer isso no Streamlit, basta removermos a regra `else` (senão) que exibia os traços `"---"`. Assim, o código entende que se o campo estiver vazio, ele não deve desenhar absolutamente nada naquela coluna. Também alterei o nome para apenas "IMC", como você pediu.
+
+Aqui está o código ajustado. Copie e cole por cima do seu arquivo atual para testar a mágica de aparecer e desaparecer:
+
+```python
 import streamlit as st
 import pandas as pd
 import math
@@ -42,16 +49,14 @@ def main():
         nome = st.text_input("Nome da Paciente", placeholder="Digite o nome completo")
         
     with c2:
-        # Inserimos min_value e max_value para liberar o calendário
         data_nasc = st.date_input("Data de Nascimento", value=None, min_value=data_minima, max_value=data_maxima, format="DD/MM/YYYY")
         
     with c3:
         idade = None
+        # A idade só vai aparecer na tela SE a data de nascimento for preenchida
         if data_nasc:
             idade = hoje.year - data_nasc.year - ((hoje.month, hoje.day) < (data_nasc.month, data_nasc.day))
-            st.metric("Idade Calculada", f"{idade} anos")
-        else:
-            st.metric("Idade Calculada", "---")
+            st.metric("Idade", f"{idade} anos")
 
     # --- Segunda Linha: Antropometria ---
     c4, c5, c6 = st.columns(3)
@@ -64,11 +69,10 @@ def main():
         
     with c6:
         imc = None
+        # O IMC só vai aparecer na tela SE o peso e a altura forem preenchidos corretamente
         if peso_kg is not None and altura_m is not None and altura_m > 0:
             imc = peso_kg / (altura_m ** 2)
-            st.metric("IMC Automático", f"{imc:.1f} kg/m²")
-        else:
-            st.metric("IMC Automático", "---")
+            st.metric("IMC", f"{imc:.1f} kg/m²")
 
     st.markdown("---")
     # --- FIM DO BLOCO 1 ---
@@ -78,3 +82,5 @@ def main():
 # ==========================================
 if __name__ == "__main__":
     main()
+
+```
