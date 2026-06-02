@@ -103,4 +103,38 @@ def main():
             dias_gest = (hoje - dum).days 
             if dias_gest >= 0:
                 ig_sem = dias_gest // 7
-                ig_d
+                ig_dias = dias_gest % 7
+                st.metric("IG (pela DUM)", f"{ig_sem} sem e {ig_dias} dias")
+            else:
+                st.metric("IG (pela DUM)", "Data no futuro")
+            
+    with col_dpp_dum:
+        if dum:
+            dpp_calc = dum + timedelta(days=280)
+            st.metric("DPP (pela DUM)", dpp_calc.strftime('%d/%m/%Y'))
+
+    # --- Datação da Gestação (USG) ---
+    col_eco, col_ig_eco, col_vazia = st.columns(3)
+    
+    with col_eco:
+        dpp_eco = st.date_input("DPP pela 1ª USG (Eco)", value=None, format="DD/MM/YYYY")
+    
+    with col_ig_eco:
+        if dpp_eco:
+            dt_concepcao_eco = dpp_eco - timedelta(days=280)
+            dias_gest_eco = (hoje - dt_concepcao_eco).days
+            if dias_gest_eco >= 0:
+                ig_sem_eco = dias_gest_eco // 7
+                ig_dias_eco = dias_gest_eco % 7
+                st.metric("IG (pela USG)", f"{ig_sem_eco} sem e {ig_dias_eco} dias")
+            else:
+                st.metric("IG (pela USG)", "Data muito distante")
+
+    st.markdown("---")
+    # --- FIM DO BLOCO 2 ---
+
+# ==========================================
+# COMANDO DE EXECUÇÃO
+# ==========================================
+if __name__ == "__main__":
+    main()
