@@ -22,17 +22,23 @@ class PDF(FPDF):
         # Posiciona a 30 mm do fim da página (garante que fique sempre fixo no rodapé)
         self.set_y(-30)
         
-        # Aviso Legal no Rodapé com marca texto verde claro, reduzido para caber em 1 linha
+        # Garante que vai começar exatamente na margem esquerda (10mm)
+        self.set_x(10)
+        
+        # Aviso Legal no Rodapé com marca texto verde claro
         self.set_font("Arial", 'B', 8)
         self.set_fill_color(200, 240, 200) # Cor verde claro (RGB)
         aviso = "Aviso Legal: Ferramenta acadêmica de apoio baseada em protocolos assistenciais. A decisão clínica final é de responsabilidade do médico obstetra."
         aviso_latin = aviso.encode('latin-1', 'replace').decode('latin-1')
-        self.cell(0, 5, txt=aviso_latin, fill=True, ln=True, align='C')
+        
+        # Calcula a largura exata da frase para o marca texto preencher apenas as palavras
+        largura_texto = self.get_string_width(aviso_latin) + 4
+        self.cell(largura_texto, 5, txt=aviso_latin, fill=True, ln=True, align='L')
         
         self.ln(5)
         y_assinatura = self.get_y()
         
-        # Data e Hora (Canto Oposto / Esquerdo)
+        # Data e Hora (Canto Esquerdo)
         self.set_font("Arial", '', 10)
         if hasattr(self, 'data_hora_str'):
             texto_data = f"Relatório gerado em: {self.data_hora_str}".encode('latin-1', 'replace').decode('latin-1')
@@ -56,10 +62,11 @@ def gerar_pdf(relatorio_texto, data_hora_str):
     pdf.set_auto_page_break(auto=True, margin=35)
     pdf.add_page()
     
-    # Tenta inserir a logo
+    # Tenta inserir a logo CENTRALIZADA
     try:
-        pdf.image("logo.png", x=10, y=8, w=60)
-        pdf.ln(25)
+        # A largura de uma folha A4 é 210mm. Se a logo tem 60mm, o centro é (210 - 60) / 2 = 75mm
+        pdf.image("logo.png", x=75, y=8, w=60)
+        pdf.set_y(45) # Dá um espaço extra generoso entre a logo e o início do relatório
     except:
         pdf.set_font("Arial", 'B', 14)
         pdf.cell(200, 10, txt="CESASCORE - RELATÓRIO", ln=True, align='C')
@@ -405,7 +412,7 @@ def main():
                 elif multipara:
                     if tem_cesarea_previa:
                         grupo_robson = "Grupo 5"
-                        descricao_robson = "Multíparas, feto único, cefálico, >= 37 semanas, com cesárea(s) prévia(s)."
+                        descricao_robson = "Multíparas, feto único, cefalico, >= 37 semanas, com cesárea(s) prévia(s)."
                         repercussao_robson = "Candidatas clássicas à prova de trabalho de parto (VBAC). O sucesso é viável, porém, na prática, este grupo concentra a maior parcela de cesarianas de repetição nos hospitais."
                     else:
                         if inicio_tp == "Espontâneo":
