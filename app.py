@@ -7,7 +7,7 @@ from datetime import datetime, date, timedelta
 # FUNDAÇÃO: CONFIGURAÇÃO DA PÁGINA
 # ==========================================
 st.set_page_config(
-    page_title="CesaSafe: Apoio à Decisão", 
+    page_title="CesaScore: Apoio à Decisão", 
     page_icon="🤰", 
     layout="wide"
 )
@@ -17,7 +17,9 @@ st.set_page_config(
 # ==========================================
 def main():
     # --- CABEÇALHO ---
-    st.title("🤰 CesaSafe: Sistema de Apoio à Decisão Obstétrica")
+    # Comando para exibir a imagem. O arquivo 'logo.png' deve estar na mesma pasta do app.py
+    st.image("logo.png", width=500) 
+    
     st.markdown("""
     **Aviso Legal:** Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. 
     A decisão clínica final é de responsabilidade exclusiva do médico obstetra.
