@@ -17,7 +17,6 @@ st.set_page_config(
 # ==========================================
 def main():
     # --- CABEÇALHO ---
-    # Comando para exibir a imagem. O arquivo 'logo.png' deve estar na mesma pasta do app.py
     st.image("logo.png", width=500) 
     
     st.markdown("""
@@ -91,10 +90,9 @@ def main():
             ["Menos de 2 anos (< 24 meses)", "Mais de 2 anos (≥ 24 meses)"]
         )
 
-    st.markdown("---") 
+    st.markdown("") 
     
     # --- Datação da Gestação (DUM) ---
-    st.subheader("Datação da Gestação")
     col_dum, col_ig_dum, col_dpp_dum = st.columns(3)
     
     with col_dum:
@@ -128,10 +126,9 @@ def main():
             ig_dias_eco = dias_gest_eco % 7
             st.metric("IG (pela USG)", f"{ig_sem_eco} sem e {ig_dias_eco} dias")
 
-    st.markdown("---")
+    st.markdown("")
     
     # --- Comorbidades e Fatores de Risco ---
-    st.subheader("Comorbidades e Fatores de Risco")
     col_comorb, col_obst = st.columns(2)
     
     with col_comorb:
