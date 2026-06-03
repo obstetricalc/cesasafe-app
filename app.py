@@ -36,7 +36,6 @@ def gerar_pdf(relatorio_texto, data_hora_str):
     pdf.ln(5)
 
     # Corpo do texto com inteligência de leitura de linhas
-    pdf.set_font("Arial", size=11)
     texto_latin = relatorio_texto.encode('latin-1', 'replace').decode('latin-1')
     
     # Lista de frases que devem ficar em negrito
@@ -61,18 +60,19 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             
         # Verifica se a linha atual começa com algum dos textos que devem ser negritos
         if any(linha_limpa.startswith(trigger) for trigger in bold_triggers):
-            pdf.set_font("Arial", 'B', 11)
+            pdf.set_font("Arial", 'B', 11) # Títulos em negrito e tamanho 11
             pdf.multi_cell(0, 6, txt=linha)
-            pdf.set_font("Arial", '', 11) # Retorna ao normal para as próximas linhas
+            pdf.set_font("Arial", '', 10)  # Retorna para o padrão tamanho 10
             
         # Se a linha estiver entre parênteses, imprime em letra menor e itálico
         elif linha_limpa.startswith('(') and linha_limpa.endswith(')'):
             pdf.set_font("Arial", 'I', 9)
             pdf.multi_cell(0, 5, txt=linha)
-            pdf.set_font("Arial", '', 11) # Retorna ao normal para as próximas linhas
+            pdf.set_font("Arial", '', 10)  # Retorna para o padrão tamanho 10
             
         else:
-            pdf.multi_cell(0, 6, txt=linha)
+            pdf.set_font("Arial", '', 10)  # Texto descritivo normal em tamanho 10
+            pdf.multi_cell(0, 5, txt=linha)
     
     # Aviso Legal no Rodapé com marca texto amarelo e negrito
     pdf.ln(15)
