@@ -51,16 +51,17 @@ def main():
     c4, c5, c6 = st.columns(3)
     
     with c4:
-        peso_kg = st.number_input("Peso (kg)", min_value=30.0, max_value=250.0, value=None, step=0.1, format="%.1f", placeholder="Ex: 70.5")
+        # Alterado para Peso Pré-gestacional para precisão na calculadora MFMU VBAC
+        peso_pre_kg = st.number_input("Peso Pré-gestacional (kg)", min_value=30.0, max_value=250.0, value=None, step=0.1, format="%.1f", placeholder="Ex: 70.5")
         
     with c5:
         altura_m = st.number_input("Altura (metros)", min_value=1.00, max_value=2.50, value=None, step=0.01, format="%.2f", placeholder="Ex: 1.60")
         
     with c6:
         imc = None
-        if peso_kg is not None and altura_m is not None and altura_m > 0:
-            imc = peso_kg / (altura_m ** 2)
-            st.metric("IMC", f"{imc:.1f} kg/m²")
+        if peso_pre_kg is not None and altura_m is not None and altura_m > 0:
+            imc = peso_pre_kg / (altura_m ** 2)
+            st.metric("IMC Pré-gestacional", f"{imc:.1f} kg/m²")
 
     st.markdown("---")
     # --- FIM DO BLOCO 1 ---
@@ -81,14 +82,27 @@ def main():
     with col_a:
         abortos = st.number_input("A (Abortos)", min_value=0, value=0, step=1)
 
-    # --- Alerta Interativo de Parto Cesáreo Anterior ---
+    # --- Alerta Interativo de Parto Cesáreo Anterior e Dados VBAC ---
     tempo_cesarea = None
+    motivo_cesarea_parada = False
+    vbac_previo = False
+    
     if partos_cesareos > 0:
-        st.warning("⚠️ Paciente com histórico de Parto Cesáreo Anterior")
-        tempo_cesarea = st.radio(
-            "Há quanto tempo ocorreu o último parto cesáreo?",
-            ["Menos de 2 anos (< 24 meses)", "Mais de 2 anos (≥ 24 meses)"]
-        )
+        st.warning("⚠️ Paciente com histórico de Parto Cesáreo Anterior (Avaliação para VBAC)")
+        
+        col_vbac1, col_vbac2 = st.columns(2)
+        with col_vbac1:
+            tempo_cesarea = st.radio(
+                "Há quanto tempo ocorreu o último parto cesáreo?",
+                ["Menos de 2 anos (< 24 meses)", "Mais de 2 anos (≥ 24 meses)"]
+            )
+        with col_vbac2:
+            st.markdown("**Fatores Predicionais (MFMU):**")
+            motivo_cesarea_parada = st.checkbox("Cesárea anterior foi por parada de progressão ou descida?")
+            if partos_normais > 0:
+                vbac_previo = st.checkbox("A paciente já teve um parto normal APÓS a cesárea (VBAC prévio)?")
+            else:
+                st.info("Paciente sem partos vaginais prévios registados.")
 
     st.markdown("") 
     
@@ -151,7 +165,7 @@ def main():
         macrossomia = st.checkbox("Macrossomia Fetal")
         oligodramnio = st.checkbox("Oligodrâmnio")
         polidramnio = st.checkbox("Polidrâmnio")
-        apres_pelvica = st.checkbox("Apresentação Pélversica") #Mantendo como estava na sua checkbox caso houvesse algum erro de digitação, mas corrigi visualmente na checkbox se houver.
+        apres_pelvica = st.checkbox("Apresentação Pélvica")
         apres_transversa = st.checkbox("Apresentação Transversa")
 
     st.markdown("---")
