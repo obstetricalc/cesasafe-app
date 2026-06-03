@@ -89,7 +89,26 @@ def main():
             ["Menos de 2 anos (< 24 meses)", "Mais de 2 anos (≥ 24 meses)"]
         )
 
-    st.markdown("") 
+    st.markdown("---") 
+
+    # --- Comorbidades e Fatores de Risco ---
+    st.subheader("Comorbidades e Fatores de Risco")
+    col_comorb, col_obst = st.columns(2)
+    
+    with col_comorb:
+        st.markdown("**Comorbidades (Pré-existentes)**")
+        hipertensao = st.checkbox("Hipertensão Crônica")
+        diabetes_previa = st.checkbox("Diabetes Mellitus prévia")
+        cardiopatias = st.checkbox("Cardiopatias")
+        
+    with col_obst:
+        st.markdown("**Fatores de Risco Obstétrico**")
+        placenta_previa = st.checkbox("Placenta Prévia")
+        pre_eclampsia = st.checkbox("Pré-eclâmpsia")
+        diabetes_gest = st.checkbox("Diabetes Gestacional")
+        parto_prematuro = st.checkbox("Histórico de Parto Prematuro")
+
+    st.markdown("---") 
     
     # --- Datação da Gestação (DUM) ---
     st.subheader("Datação da Gestação")
