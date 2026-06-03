@@ -17,8 +17,31 @@ st.set_page_config(
 # ==========================================
 # FUNÇÃO AUXILIAR: GERADOR DE PDF
 # ==========================================
+class PDF(FPDF):
+    def footer(self):
+        # Posiciona a 35 mm do fim da página (garante que fique sempre fixo no rodapé)
+        self.set_y(-35)
+        
+        # Aviso Legal no Rodapé com marca texto verde claro e negrito
+        self.set_font("Arial", 'B', 9)
+        self.set_fill_color(200, 240, 200) # Cor verde claro (RGB)
+        aviso = "Aviso Legal: Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. A decisão clínica final é de responsabilidade exclusiva do médico obstetra."
+        aviso_latin = aviso.encode('latin-1', 'replace').decode('latin-1')
+        self.multi_cell(0, 5, txt=aviso_latin, fill=True)
+        
+        # Linha de assinatura no rodapé recuado para o canto direito
+        self.ln(5)
+        self.set_font("Arial", '', 10)
+        self.set_x(120) # Move o cursor para a direita
+        self.cell(80, 5, txt="________________________________________", ln=True, align='C')
+        self.set_x(120)
+        self.cell(80, 5, txt="Profissional avaliador", ln=True, align='C')
+
 def gerar_pdf(relatorio_texto, data_hora_str):
-    pdf = FPDF()
+    pdf = PDF()
+    
+    # Define uma margem inferior automática de 40mm para o texto nunca sobrepor o rodapé
+    pdf.set_auto_page_break(auto=True, margin=40)
     pdf.add_page()
     
     # Tenta inserir a logo
@@ -75,22 +98,7 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             pdf.set_font("Arial", '', 10)  # Texto descritivo normal em tamanho 10
             pdf.multi_cell(0, 5, txt=linha)
     
-    # Aviso Legal no Rodapé com marca texto verde claro e negrito
-    pdf.ln(15)
-    pdf.set_font("Arial", 'B', 9)
-    pdf.set_fill_color(200, 240, 200) # Cor verde claro (RGB)
-    aviso = "Aviso Legal: Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. A decisão clínica final é de responsabilidade exclusiva do médico obstetra."
-    # Transforma string com acentos para PDF
-    aviso_latin = aviso.encode('latin-1', 'replace').decode('latin-1')
-    pdf.multi_cell(0, 5, txt=aviso_latin, fill=True)
-    
-    # Linha de assinatura no rodapé recuado para o canto direito
-    pdf.ln(15)
-    pdf.set_font("Arial", '', 10)
-    pdf.set_x(120) # Move o cursor para a direita (alinhando o bloco de 80mm no canto)
-    pdf.cell(80, 5, txt="________________________________________", ln=True, align='C')
-    pdf.set_x(120)
-    pdf.cell(80, 5, txt="Profissional avaliador", ln=True, align='C')
+    # O rodapé agora é chamado automaticamente pela classe PDF() para cada página!
     
     return pdf.output(dest='S').encode('latin-1')
 
@@ -393,7 +401,7 @@ def main():
                 elif multipara:
                     if tem_cesarea_previa:
                         grupo_robson = "Grupo 5"
-                        descricao_robson = "Multíparas, feto único, cefálico, >= 37 semanas, com cesárea(s) prévia(s)."
+                        descricao_robson = "Multíparas, feto único, cefalico, >= 37 semanas, com cesárea(s) prévia(s)."
                         repercussao_robson = "Candidatas clássicas à prova de trabalho de parto (VBAC). O sucesso é viável, porém, na prática, este grupo concentra a maior parcela de cesarianas de repetição nos hospitais."
                     else:
                         if inicio_tp == "Espontâneo":
