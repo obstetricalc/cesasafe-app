@@ -164,25 +164,27 @@ def main():
     
     # --- Avaliação Fetal e Dinâmica Uterina ---
     st.subheader("Avaliação Fetal e Dinâmica Uterina")
-    col_fetos, col_apres, col_tp, col_ig_rob = st.columns(4)
+    col_fetos, col_sit, col_apres, col_tp = st.columns(4)
     
     with col_fetos:
         tipo_gestacao = st.selectbox("Número de Fetos", ["Único", "Múltiplo (Gêmeos ou mais)"])
     
+    with col_sit:
+        situacao = st.selectbox("Situação Fetal", ["Longitudinal", "Transversa", "Oblíqua"])
+        
     with col_apres:
-        apresentacao = st.selectbox("Apresentação Fetal", ["Cefálica", "Pélvica", "Situação Transversa/Oblíqua"])
+        apresentacao = st.selectbox("Apresentação Fetal", ["Cefálica", "Pélvica", "Córmica"])
     
     with col_tp:
         inicio_tp = st.selectbox("Início do Trabalho de Parto", ["Espontâneo", "Induzido", "Cesárea antes do TP"])
         
-    with col_ig_rob:
-        ig_termo = st.selectbox("Classificação da IG", ["≥ 37 semanas (Termo)", "< 37 semanas (Pré-termo)"])
-
-    col_au, col_bcf, col_vazia1, col_vazia2 = st.columns(4)
+    col_au, col_bcf, col_du, col_vazia1 = st.columns(4)
     with col_au:
-        au = st.number_input("AU - Altura Uterina (cm)", min_value=0, max_value=60, value=0, step=1)
+        au = st.number_input("AU (cm)", min_value=0, max_value=60, value=0, step=1, help="Altura Uterina")
     with col_bcf:
         bcf = st.number_input("BCF (bpm)", min_value=0, max_value=250, value=140, step=1, help="Faixa de normalidade considerada: 120 a 160 bpm")
+    with col_du:
+        dinamica = st.number_input("Contrações / 10 min", min_value=0, max_value=10, value=0, step=1, help="Dinâmica Uterina (nº de contrações em 10 minutos)")
 
     st.markdown("")
 
