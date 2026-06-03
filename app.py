@@ -279,20 +279,20 @@ def main():
             texto_idade = "Idade nao informada."
             if idade:
                 if idade >= 35:
-                    texto_idade = f"Idade: {idade} anos (Idade Materna Avancada).\nPREDICAO DE VIA DE PARTO: A literatura aponta maior incidencia de comorbidades (DHEG, DMG) e risco de distocia funcional. Embora o parto vaginal seja viavel e encorajado, estatisticamente ha aumento significativo nas taxas de evolucao para parto cesareo."
+                    texto_idade = f"Idade: {idade} anos (Idade Materna Avancada).\nPredicao de via de parto: A literatura aponta maior incidencia de comorbidades (DHEG, DMG) e risco de distocia funcional. Embora o parto vaginal seja viavel e encorajado, estatisticamente ha aumento significativo nas taxas de evolucao para parto cesareo."
                 elif idade < 15:
-                    texto_idade = f"Idade: {idade} anos (Adolescencia Precoce).\nPREDICAO DE VIA DE PARTO: Maior risco de desproporcao cefalopelvica. A via de parto depende do desenvolvimento pelvico, havendo taxas elevadas de resolucao por via cirurgica alta."
+                    texto_idade = f"Idade: {idade} anos (Adolescencia Precoce).\nPredicao de via de parto: Maior risco de desproporcao cefalopelvica. A via de parto depende do desenvolvimento pelvico, havendo taxas elevadas de resolucao por via cirurgica alta."
                 else:
-                    texto_idade = f"Idade: {idade} anos (Risco Habitual).\nPREDICAO DE VIA DE PARTO: Fator sem risco adicional isolado. A literatura corrobora alta taxa de sucesso para evolucao de parto vaginal."
+                    texto_idade = f"Idade: {idade} anos (Risco Habitual).\nPredicao de via de parto: Fator sem risco adicional isolado. A literatura corrobora alta taxa de sucesso para evolucao de parto vaginal."
             
             texto_imc = "IMC nao calculado."
             if imc:
                 if imc >= 30:
-                    texto_imc = f"IMC: {imc:.1f} kg/m2 (Obesidade).\nPREDICAO DE VIA DE PARTO: A OMS alerta para maior risco de distocias, macrossomia fetal e falha na progressao. Aumenta substancialmente o risco basal de cesariana, embora a prova de trabalho de parto continue sendo recomendada."
+                    texto_imc = f"IMC: {imc:.1f} kg/m2 (Obesidade).\nPredicao de via de parto: A OMS alerta para maior risco de distocias, macrossomia fetal e falha na progressao. Aumenta substancialmente o risco basal de cesariana, embora a prova de trabalho de parto continue sendo recomendada."
                 elif imc >= 25:
-                    texto_imc = f"IMC: {imc:.1f} kg/m2 (Sobrepeso).\nPREDICAO DE VIA DE PARTO: Risco levemente aumentado para distocias de trajeto mole. Via vaginal continua sendo fortemente a via de eleicao."
+                    texto_imc = f"IMC: {imc:.1f} kg/m2 (Sobrepeso).\nPredicao de via de parto: Risco levemente aumentado para distocias de trajeto mole. Via vaginal continua sendo fortemente a via de eleicao."
                 else:
-                    texto_imc = f"IMC: {imc:.1f} kg/m2 (Eutrofia).\nPREDICAO DE VIA DE PARTO: Padrao de normalidade. Fator preditor altamente favoravel para o sucesso da resolucao por parto vaginal."
+                    texto_imc = f"IMC: {imc:.1f} kg/m2 (Eutrofia).\nPredicao de via de parto: Padrao de normalidade. Fator preditor altamente favoravel para o sucesso da resolucao por parto vaginal."
 
             comorbidades_list = []
             if hipertensao: comorbidades_list.append("Hipertensao Cronica")
@@ -306,11 +306,11 @@ def main():
             
             texto_riscos = ""
             if placenta_previa:
-                texto_riscos = "Placenta Previa identificada.\nPREDICAO DE VIA DE PARTO: Indicacao ABSOLUTA de cesariana. O parto vaginal esta contraindicado pelo risco hemorragico severo."
+                texto_riscos = "Fatores identificados (Gestacao de alto risco): Placenta Previa.\nPredicao de via de parto: Indicacao ABSOLUTA de cesariana. O parto vaginal esta contraindicado pelo risco hemorragico severo."
             elif len(comorbidades_list) > 0:
-                texto_riscos = f"GESTACAO DE ALTO RISCO. Fatores identificados: {', '.join(comorbidades_list)}.\nPREDICAO DE VIA DE PARTO: Exigem monitoramento rigoroso intraparto e frequentemente indicam a necessidade de antecipacao do parto (inducao). Se o colo for desfavoravel, a taxa de cesariana nestes grupos e superior a da populacao de risco habitual."
+                texto_riscos = f"Fatores identificados (Gestacao de alto risco): {', '.join(comorbidades_list)}.\nPredicao de via de parto: Exigem monitoramento rigoroso intraparto e frequentemente indicam a necessidade de antecipacao do parto (inducao). Se o colo for desfavoravel, a taxa de cesariana nestes grupos e superior a da populacao de risco habitual."
             else:
-                texto_riscos = "Condicoes Obstetricas: Gestacao de Risco Habitual.\nPREDICAO DE VIA DE PARTO: Cenariio extremamente favoravel para conducao de parto vaginal seguro."
+                texto_riscos = "Fatores identificados: Nenhum fator de risco adicional detectado (Gestacao de Risco Habitual).\nPredicao de via de parto: Cenario extremamente favoravel para conducao de parto vaginal seguro."
 
             # --- 2. CÁLCULO DE ROBSON ---
             ig_robson = "Termo" if (dias_gest if dum else 280) >= 259 else "Pre-termo"
@@ -408,9 +408,9 @@ def main():
                 else:
                     texto_vbac = " | ".join(fatores_vbac)
                     if vbac_previo:
-                        conclusao_vbac = "PREDOMINANCIA DE FATOR FAVORAVEL: O historico de VBAC previo eleva drasticamente a probabilidade estatistica de novo sucesso (>80%). A conduta pende firmemente para tentativa de via vaginal."
+                        conclusao_vbac = "predominancia de fator favoravel: O historico de VBAC previo eleva drasticamente a probabilidade estatistica de novo sucesso (>80%). A conduta pende firmemente para tentativa de via vaginal."
                     else:
-                        conclusao_vbac = "PRESENCA DE FATORES DESFAVORAVEIS: O cenario atual compromete o indice de sucesso basal calculado pelo modelo. Aumenta-se significativamente a chance real de que a tentativa de trabalho de parto culmine em nova cesariana."
+                        conclusao_vbac = "presenca de fatores desfavoraveis: O cenario atual compromete o indice de sucesso basal calculado pelo modelo. Aumenta-se significativamente a chance real de que a tentativa de trabalho de parto culmine em nova cesariana."
             else:
                 texto_vbac = "Nao aplicavel. Paciente sem historico de cesarea."
                 conclusao_vbac = "Sem repercussao (avaliar via de parto pelos demais fatores)."
@@ -420,35 +420,28 @@ def main():
             data_atual = datetime.now().strftime("%d/%m/%Y as %H:%M")
             
             relatorio_final = f"""RELATÓRIO CLÍNICO DE APOIO À DECISÃO - CESASCORE
-=========================================================
 PACIENTE: {nome_paciente.upper()}
 
 1. AVALIAÇÃO MATERNA E FATORES DE RISCO
----------------------------------------------------------
 {texto_idade}
-
 {texto_imc}
-
 {texto_riscos}
 
 2. CLASSIFICAÇÃO DE ROBSON
----------------------------------------------------------
 (A Classificacao de Robson e padronizada pela OMS para categorizar gestantes, monitorar taxas de cesariana nos servicos e predizer a expectativa de via de parto.)
-IDENTIFICADO: {descricao_robson}
-CLASSIFICAÇÃO: {grupo_robson}
-REPERCUSSÃO NA VIA DE PARTO: {repercussao_robson}
+Identificado: {descricao_robson}
+Classificação: {grupo_robson}
+Repercussão na via de parto: {repercussao_robson}
 
 3. ÍNDICE DE BISHOP
----------------------------------------------------------
 (O Indice de Bishop avalia clinicamente a maturidade cervical e prediz a probabilidade de sucesso de uma inducao do trabalho de parto ou da sua progressao espontanea.)
-IDENTIFICADO: Colo {status_bishop} (Pontuacao total: {pontos_bishop})
-REPERCUSSÃO NA VIA DE PARTO: {repercussao_bishop}
+Identificado: Colo {status_bishop} (Pontuacao total: {pontos_bishop})
+Repercussão na via de parto: {repercussao_bishop}
 
 4. AVALIAÇÃO PARA VBAC (Parto Vaginal após Cesárea)
----------------------------------------------------------
 (O modelo matematico MFMU estima a probabilidade individualizada de sucesso de um parto normal apos uma cesarea, servindo para o aconselhamento obstetrico embasado.)
-IDENTIFICADO: {texto_vbac}
-REPERCUSSÃO NA VIA DE PARTO: {conclusao_vbac}
+Identificado: {texto_vbac}
+Repercussão na via de parto: {conclusao_vbac}
 """
             # Renderiza na Tela
             st.success("Relatório gerado com sucesso!")
