@@ -65,7 +65,7 @@ def main():
     # --- FIM DO BLOCO 1 ---
 
     # ==========================================
-    # BLOCO 2: HISTÓRICO OBSTÉTRICO E RISCOS
+    # BLOCO 2: HISTÓRICO OBSTÉTRICO
     # ==========================================
     st.header("2. Histórico Obstétrico")
     
@@ -133,17 +133,27 @@ def main():
     col_comorb, col_obst = st.columns(2)
     
     with col_comorb:
-        st.markdown("**Comorbidades (Pré-existentes)**")
+        st.markdown("**Comorbidades Maternas**")
         hipertensao = st.checkbox("Hipertensão Crônica")
-        diabetes_previa = st.checkbox("Diabetes Mellitus prévia")
+        diabetes_previa = st.checkbox("Diabetes Pré-gestacional")
+        obesidade = st.checkbox("Obesidade")
         cardiopatias = st.checkbox("Cardiopatias")
+        doenca_renal = st.checkbox("Doença Renal Crônica")
+        doenca_autoimune = st.checkbox("Doença Autoimune")
+        outras_comorb = st.checkbox("Outras")
         
     with col_obst:
-        st.markdown("**Fatores de Risco Obstétrico**")
-        placenta_previa = st.checkbox("Placenta Prévia")
+        st.markdown("**Fatores Obstétricos da Gestação Atual**")
         pre_eclampsia = st.checkbox("Pré-eclâmpsia")
         diabetes_gest = st.checkbox("Diabetes Gestacional")
-        parto_prematuro = st.checkbox("Histórico de Parto Prematuro")
+        placenta_previa = st.checkbox("Placenta Prévia")
+        gemelar = st.checkbox("Gestação Gemelar")
+        ciur = st.checkbox("Restrição de Crescimento Fetal")
+        macrossomia = st.checkbox("Macrossomia Fetal")
+        oligodramnio = st.checkbox("Oligodrâmnio")
+        polidramnio = st.checkbox("Polidrâmnio")
+        apres_pelvica = st.checkbox("Apresentação Pélvica")
+        apres_transversa = st.checkbox("Apresentação Transversa")
 
     st.markdown("---")
     # --- FIM DO BLOCO 2 ---
