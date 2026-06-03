@@ -65,7 +65,7 @@ def main():
     # --- FIM DO BLOCO 1 ---
 
     # ==========================================
-    # BLOCO 2: HISTÓRICO OBSTÉTRICO
+    # BLOCO 2: HISTÓRICO OBSTÉTRICO E RISCOS
     # ==========================================
     st.header("2. Histórico Obstétrico")
     
@@ -88,25 +88,6 @@ def main():
             "Há quanto tempo ocorreu o último parto cesáreo?",
             ["Menos de 2 anos (< 24 meses)", "Mais de 2 anos (≥ 24 meses)"]
         )
-
-    st.markdown("---") 
-
-    # --- Comorbidades e Fatores de Risco ---
-    st.subheader("Comorbidades e Fatores de Risco")
-    col_comorb, col_obst = st.columns(2)
-    
-    with col_comorb:
-        st.markdown("**Comorbidades (Pré-existentes)**")
-        hipertensao = st.checkbox("Hipertensão Crônica")
-        diabetes_previa = st.checkbox("Diabetes Mellitus prévia")
-        cardiopatias = st.checkbox("Cardiopatias")
-        
-    with col_obst:
-        st.markdown("**Fatores de Risco Obstétrico**")
-        placenta_previa = st.checkbox("Placenta Prévia")
-        pre_eclampsia = st.checkbox("Pré-eclâmpsia")
-        diabetes_gest = st.checkbox("Diabetes Gestacional")
-        parto_prematuro = st.checkbox("Histórico de Parto Prematuro")
 
     st.markdown("---") 
     
@@ -144,6 +125,25 @@ def main():
             ig_sem_eco = dias_gest_eco // 7
             ig_dias_eco = dias_gest_eco % 7
             st.metric("IG (pela USG)", f"{ig_sem_eco} sem e {ig_dias_eco} dias")
+
+    st.markdown("---")
+    
+    # --- Comorbidades e Fatores de Risco ---
+    st.subheader("Comorbidades e Fatores de Risco")
+    col_comorb, col_obst = st.columns(2)
+    
+    with col_comorb:
+        st.markdown("**Comorbidades (Pré-existentes)**")
+        hipertensao = st.checkbox("Hipertensão Crônica")
+        diabetes_previa = st.checkbox("Diabetes Mellitus prévia")
+        cardiopatias = st.checkbox("Cardiopatias")
+        
+    with col_obst:
+        st.markdown("**Fatores de Risco Obstétrico**")
+        placenta_previa = st.checkbox("Placenta Prévia")
+        pre_eclampsia = st.checkbox("Pré-eclâmpsia")
+        diabetes_gest = st.checkbox("Diabetes Gestacional")
+        parto_prematuro = st.checkbox("Histórico de Parto Prematuro")
 
     st.markdown("---")
     # --- FIM DO BLOCO 2 ---
