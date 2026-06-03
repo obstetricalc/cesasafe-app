@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import math
 from datetime import datetime, date, timedelta
+from fpdf import FPDF
+import io
 
 # ==========================================
 # FUNDAÇÃO: CONFIGURAÇÃO DA PÁGINA
@@ -11,6 +13,41 @@ st.set_page_config(
     page_icon="🤰", 
     layout="wide"
 )
+
+# ==========================================
+# FUNÇÃO AUXILIAR: GERADOR DE PDF
+# ==========================================
+def gerar_pdf(relatorio_texto, data_hora_str):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=11)
+    
+    # Tenta inserir a logo
+    try:
+        pdf.image("logo.png", x=10, y=8, w=60)
+        pdf.ln(25)
+    except:
+        pdf.cell(200, 10, txt="CESASCORE - RELATORIO", ln=True, align='C')
+        pdf.ln(10)
+
+    # Cabeçalho de Data e Hora
+    pdf.set_font("Arial", 'B', 10)
+    pdf.cell(200, 10, txt=f"Relatorio gerado em: {data_hora_str}", ln=True, align='R')
+    pdf.ln(5)
+
+    # Corpo do texto
+    pdf.set_font("Arial", size=11)
+    # Tratamento de encoding básico para evitar erros com acentos no PDF
+    texto_latin = relatorio_texto.encode('latin-1', 'replace').decode('latin-1')
+    pdf.multi_cell(0, 7, txt=texto_latin)
+    
+    # Aviso Legal no Rodapé
+    pdf.ln(15)
+    pdf.set_font("Arial", 'I', 9)
+    aviso = "Aviso Legal: Esta ferramenta e um prototipo academico auxiliar, baseado em protocolos assistenciais. A decisao clinica final e de responsabilidade exclusiva do medico obstetra."
+    pdf.multi_cell(0, 5, txt=aviso)
+    
+    return pdf.output(dest='S').encode('latin-1')
 
 # ==========================================
 # INÍCIO DO APLICATIVO PRINCIPAL
@@ -51,7 +88,6 @@ def main():
     c4, c5, c6 = st.columns(3)
     
     with c4:
-        # Alterado para Peso Pré-gestacional para precisão na calculadora MFMU VBAC
         peso_pre_kg = st.number_input("Peso Pré-gestacional (kg)", min_value=30.0, max_value=250.0, value=None, step=0.1, format="%.1f", placeholder="Ex: 70.5")
         
     with c5:
@@ -149,7 +185,7 @@ def main():
         st.markdown("**Comorbidades Maternas**")
         hipertensao = st.checkbox("Hipertensão Crônica")
         diabetes_previa = st.checkbox("Diabetes Pré-gestacional")
-        obesidade = st.checkbox("Obesidade")
+        obesidade_check = st.checkbox("Obesidade")
         cardiopatias = st.checkbox("Cardiopatias")
         doenca_renal = st.checkbox("Doença Renal Crônica")
         doenca_autoimune = st.checkbox("Doença Autoimune")
@@ -222,6 +258,177 @@ def main():
 
     st.markdown("---")
     # --- FIM DO BLOCO 3 ---
+
+    # ==========================================
+    # BLOCO 4: RELATÓRIO FINAL DE APOIO À DECISÃO
+    # ==========================================
+    st.header("4. Relatório CesaScore")
+    
+    if st.button("Gerar Relatório de Apoio à Decisão", type="primary"):
+        with st.spinner("Processando dados e interpretando diretrizes clínicas..."):
+            
+            # --- 1. AVALIAÇÃO CLÍNICA MATERNA ---
+            texto_idade = ""
+            if idade:
+                if idade >= 35:
+                    texto_idade = f"Idade Materna Avançada ({idade} anos): Segundo o Ministério da Saúde, ha aumento de risco para sindromes hipertensivas, diabetes gestacional e desvios do crescimento fetal, o que pode influenciar a taxa de intervencao cirurgica."
+                elif idade < 15:
+                    texto_idade = f"Adolescencia precoce ({idade} anos): Considerada faixa de risco para complicacoes obstetricas."
+                else:
+                    texto_idade = f"Idade ({idade} anos): Faixa etaria sem risco adicional isolado."
+            
+            texto_imc = ""
+            if imc:
+                if imc >= 30:
+                    texto_imc = f"IMC de {imc:.1f} (Obesidade): A OMS alerta que a obesidade materna associa-se a maior risco de distocias, macrossomia fetal e falha na progressao do trabalho de parto, aumentando o risco basal de cesariana."
+                elif imc >= 25:
+                    texto_imc = f"IMC de {imc:.1f} (Sobrepeso): Requer vigilancia padrao."
+                else:
+                    texto_imc = f"IMC de {imc:.1f}: Dentro dos padroes de normalidade."
+
+            comorbidades_list = []
+            if hipertensao: comorbidades_list.append("Hipertensao Cronica")
+            if diabetes_previa: comorbidades_list.append("Diabetes Pre-gestacional")
+            if pre_eclampsia: comorbidades_list.append("Pre-eclampsia")
+            if diabetes_gest: comorbidades_list.append("Diabetes Gestacional")
+            if placenta_previa: comorbidades_list.append("Placenta Previa")
+            if ciur: comorbidades_list.append("Restricao de Crescimento Fetal")
+            if macrossomia: comorbidades_list.append("Macrossomia Fetal")
+            if oligodramnio: comorbidades_list.append("Oligodramnio")
+            if polidramnio: comorbidades_list.append("Polidramnio")
+            
+            texto_riscos = "Risco Habitual."
+            if len(comorbidades_list) > 0:
+                texto_riscos = "GESTAÇÃO DE ALTO RISCO. Fatores identificados: " + ", ".join(comorbidades_list) + ". Tais condicoes exigem monitoramento rigoroso intraparto e podem ser determinantes absolutos ou relativos para a via de parto."
+
+            # --- 2. CÁLCULO DE ROBSON ---
+            ig_robson = "Termo" if (dias_gest if dum else 280) >= 259 else "Pre-termo"
+            paridade_total = partos_normais + partos_cesareos
+            nulipara = (paridade_total == 0)
+            multipara = (paridade_total > 0)
+            tem_cesarea_previa = (partos_cesareos > 0)
+            
+            grupo_robson = "Indefinido"
+            descricao_robson = ""
+
+            if tipo_gestacao == "Múltiplo (Gêmeos ou mais)":
+                grupo_robson = "Grupo 8"
+                descricao_robson = "Todas as gestantes com gestacoes multiplas (incluindo parto cesareo previo)."
+            elif apresentacao in ["Córmica"] or situacao in ["Transversa", "Oblíqua"]:
+                grupo_robson = "Grupo 9"
+                descricao_robson = "Todas as gestantes com feto unico em situacao transversa ou obliqua."
+            elif apresentacao == "Pélvica":
+                if nulipara:
+                    grupo_robson = "Grupo 6"
+                    descricao_robson = "Nuliparas, feto unico, apresentacao pelvica."
+                else:
+                    grupo_robson = "Grupo 7"
+                    descricao_robson = "Multiparas, feto unico, apresentacao pelvica, com ou sem parto cesareo anterior."
+            elif ig_robson == "Pre-termo":
+                grupo_robson = "Grupo 10"
+                descricao_robson = "Todas as gestantes com feto unico, apresentacao cefalica, pre-termo (< 37 semanas)."
+            else:
+                if nulipara:
+                    if inicio_tp == "Espontâneo":
+                        grupo_robson = "Grupo 1"
+                        descricao_robson = "Nuliparas, feto unico, cefalico, >= 37 semanas, TP espontaneo."
+                    else:
+                        grupo_robson = "Grupo 2"
+                        descricao_robson = "Nuliparas, feto unico, cefalico, >= 37 semanas, induzido ou cesarea antes do TP."
+                elif multipara:
+                    if tem_cesarea_previa:
+                        grupo_robson = "Grupo 5"
+                        descricao_robson = "Multiparas, feto unico, cefalico, >= 37 semanas, com 1 ou mais partos cesareos anteriores."
+                    else:
+                        if inicio_tp == "Espontâneo":
+                            grupo_robson = "Grupo 3"
+                            descricao_robson = "Multiparas (sem cesarea previa), feto unico, cefalico, >= 37 semanas, TP espontaneo."
+                        else:
+                            grupo_robson = "Grupo 4"
+                            descricao_robson = "Multiparas (sem cesarea previa), feto unico, cefalico, >= 37 semanas, induzido ou cesarea antes do TP."
+
+            # --- 3. CÁLCULO DE BISHOP ---
+            pontos_bishop = 0
+            if dilatacao == "1 a 2 cm": pontos_bishop += 1
+            elif dilatacao == "3 a 4 cm": pontos_bishop += 2
+            elif dilatacao == "5 cm ou mais": pontos_bishop += 3
+            
+            if esvaecimento == "40 a 50%": pontos_bishop += 1
+            elif esvaecimento == "60 a 70%": pontos_bishop += 2
+            elif esvaecimento == "80% ou mais": pontos_bishop += 3
+            
+            if altura_apres == "-2": pontos_bishop += 1
+            elif altura_apres in ["-1", "0"]: pontos_bishop += 2
+            elif altura_apres in ["+1", "+2", "+3"]: pontos_bishop += 3
+            
+            if consistencia == "Médio": pontos_bishop += 1
+            elif consistencia == "Amolecido": pontos_bishop += 2
+            
+            if posicao_colo == "Centralizado": pontos_bishop += 1
+            elif posicao_colo == "Anterior": pontos_bishop += 2
+            
+            status_bishop = "Desfavoravel" if pontos_bishop <= 6 else "Favoravel"
+
+            # --- 4. AVALIAÇÃO VBAC ---
+            texto_vbac = ""
+            if tem_cesarea_previa:
+                texto_vbac = "O modelo MFMU para predicao de VBAC (Vaginal Birth After Cesarean) estima a probabilidade de sucesso de um parto normal apos cesarea. Baseado nos dados informados:\n"
+                if vbac_previo:
+                    texto_vbac += "- PREDITOR FAVORAVEL: Historico de parto normal apos cesariana aumenta expressivamente a chance de sucesso.\n"
+                if motivo_cesarea_parada:
+                    texto_vbac += "- PREDITOR DESFAVORAVEL: Cesarea anterior por parada de progressao reduz o indice de sucesso basal.\n"
+                if imc and imc >= 30:
+                    texto_vbac += "- PREDITOR DESFAVORAVEL: Obesidade (IMC >= 30) diminui as taxas de sucesso do VBAC.\n"
+                if idade and idade >= 35:
+                    texto_vbac += "- PREDITOR DESFAVORAVEL: Idade materna avancada reduz marginalmente a probabilidade de parto vaginal."
+                if not (vbac_previo or motivo_cesarea_parada or (imc and imc>=30) or (idade and idade>=35)):
+                    texto_vbac += "- A paciente possui fatores neutros para a tentativa de VBAC. A decisao deve ser individualizada com base na evolucao clinica."
+            else:
+                texto_vbac = "Avaliacao VBAC nao aplicavel (Paciente sem historico de cesarea)."
+
+            # --- MONTAGEM DO RELATÓRIO FINAL ---
+            nome_paciente = nome if nome else "Paciente nao identificada"
+            data_atual = datetime.now().strftime("%d/%m/%Y as %H:%M")
+            
+            relatorio_final = f"""RELATÓRIO CLÍNICO DE APOIO À DECISÃO - CESASCORE
+=========================================================
+PACIENTE: {nome_paciente}
+
+1. AVALIAÇÃO MATERNA E FATORES DE RISCO
+---------------------------------------------------------
+{texto_idade}
+{texto_imc}
+AVALIACAO DE RISCO OBSTETRICO: {texto_riscos}
+
+2. CLASSIFICAÇÃO DE ROBSON
+---------------------------------------------------------
+(A Classificacao de Robson e padronizada pela OMS para categorizar gestantes e monitorar as taxas de cesariana em populacoes.)
+RESULTADO: {grupo_robson}
+Justificativa: {descricao_robson}
+
+3. ÍNDICE DE BISHOP
+---------------------------------------------------------
+(O Indice de Bishop avalia a maturidade cervical e prediz a probabilidade de sucesso da inducao do trabalho de parto ou progressao espontanea.)
+PONTUAÇÃO TOTAL: {pontos_bishop}
+RESULTADO: Colo {status_bishop} (Valores > 6 indicam maior probabilidade de sucesso em parto vaginal).
+
+4. AVALIAÇÃO PARA VBAC (Parto Vaginal após Cesárea)
+---------------------------------------------------------
+{texto_vbac}
+"""
+            # Renderiza na Tela
+            st.success("Relatório gerado com sucesso!")
+            st.text_area("Pré-visualização do Relatório:", relatorio_final, height=500)
+            
+            # Gera PDF
+            pdf_bytes = gerar_pdf(relatorio_final, data_atual)
+            
+            st.download_button(
+                label="📥 Baixar Relatório em PDF",
+                data=pdf_bytes,
+                file_name=f"CesaScore_Relatorio_{nome_paciente.replace(' ', '_')}.pdf",
+                mime="application/pdf"
+            )
 
 # ==========================================
 # COMANDO DE EXECUÇÃO
