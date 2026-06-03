@@ -157,6 +157,56 @@ def main():
     st.markdown("---")
     # --- FIM DO BLOCO 2 ---
 
+    # ==========================================
+    # BLOCO 3: EXAME FÍSICO E OBSTÉTRICO
+    # ==========================================
+    st.header("3. Exame Físico e Obstétrico")
+    
+    # --- Avaliação Fetal e Dinâmica Uterina ---
+    st.subheader("Avaliação Fetal e Dinâmica Uterina")
+    col_fetos, col_apres, col_tp, col_ig_rob = st.columns(4)
+    
+    with col_fetos:
+        tipo_gestacao = st.selectbox("Número de Fetos", ["Único", "Múltiplo (Gêmeos ou mais)"])
+    
+    with col_apres:
+        apresentacao = st.selectbox("Apresentação Fetal", ["Cefálica", "Pélvica", "Situação Transversa/Oblíqua"])
+    
+    with col_tp:
+        inicio_tp = st.selectbox("Início do Trabalho de Parto", ["Espontâneo", "Induzido", "Cesárea antes do TP"])
+        
+    with col_ig_rob:
+        ig_termo = st.selectbox("Classificação da IG", ["≥ 37 semanas (Termo)", "< 37 semanas (Pré-termo)"])
+
+    col_au, col_bcf, col_vazia1, col_vazia2 = st.columns(4)
+    with col_au:
+        au = st.number_input("AU - Altura Uterina (cm)", min_value=0, max_value=60, value=0, step=1)
+    with col_bcf:
+        bcf = st.number_input("BCF (bpm)", min_value=0, max_value=250, value=140, step=1, help="Faixa de normalidade considerada: 120 a 160 bpm")
+
+    st.markdown("")
+
+    # --- Toque Vaginal (Avaliação do Colo Uterino) ---
+    st.subheader("Toque Vaginal")
+    st.markdown("Preencha os dados do exame de toque para avaliação da maturidade cervical e progressão.")
+    
+    col_dilat, col_esvaec, col_altura = st.columns(3)
+    with col_dilat:
+        dilatacao = st.selectbox("Dilatação (cm)", ["Fechado (0 cm)", "1 a 2 cm", "3 a 4 cm", "5 cm ou mais"])
+    with col_esvaec:
+        esvaecimento = st.selectbox("Esvaecimento (%)", ["0 a 30%", "40 a 50%", "60 a 70%", "80% ou mais"])
+    with col_altura:
+        altura_apres = st.selectbox("Altura da Apresentação (De Lee)", ["-3", "-2", "-1 ou 0", "+1 ou +2"])
+
+    col_consist, col_posic, col_vazia3 = st.columns(3)
+    with col_consist:
+        consistencia = st.selectbox("Consistência do Colo", ["Firme", "Médio", "Amolecido"])
+    with col_posic:
+        posicao_colo = st.selectbox("Posição do Colo", ["Posterior", "Centralizado", "Anterior"])
+
+    st.markdown("---")
+    # --- FIM DO BLOCO 3 ---
+
 # ==========================================
 # COMANDO DE EXECUÇÃO
 # ==========================================
