@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import math
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 from fpdf import FPDF
 import io
 
@@ -27,12 +27,13 @@ def gerar_pdf(relatorio_texto, data_hora_str):
         pdf.ln(25)
     except:
         pdf.set_font("Arial", 'B', 14)
-        pdf.cell(200, 10, txt="CESASCORE - RELATORIO", ln=True, align='C')
+        pdf.cell(200, 10, txt="CESASCORE - RELATÓRIO", ln=True, align='C')
         pdf.ln(10)
 
     # Cabeçalho de Data e Hora
     pdf.set_font("Arial", 'B', 10)
-    pdf.cell(0, 10, txt=f"Relatorio gerado em: {data_hora_str}", ln=True, align='R')
+    texto_cabecalho = f"Relatório gerado em: {data_hora_str}".encode('latin-1', 'replace').decode('latin-1')
+    pdf.cell(0, 10, txt=texto_cabecalho, ln=True, align='R')
     pdf.ln(5)
 
     # Corpo do texto com inteligência de leitura de linhas
@@ -74,12 +75,18 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             pdf.set_font("Arial", '', 10)  # Texto descritivo normal em tamanho 10
             pdf.multi_cell(0, 5, txt=linha)
     
-    # Aviso Legal no Rodapé com marca texto amarelo e negrito
+    # Aviso Legal no Rodapé com marca texto verde claro e negrito
     pdf.ln(15)
     pdf.set_font("Arial", 'B', 9)
-    pdf.set_fill_color(255, 255, 0) # Cor amarela (RGB)
+    pdf.set_fill_color(200, 240, 200) # Cor verde claro (RGB)
     aviso = "Aviso Legal: Esta ferramenta e um prototipo academico auxiliar, baseado em protocolos assistenciais. A decisao clinica final e de responsabilidade exclusiva do medico obstetra."
     pdf.multi_cell(0, 5, txt=aviso, fill=True)
+    
+    # Linha de assinatura no canto inferior esquerdo
+    pdf.ln(20)
+    pdf.set_font("Arial", '', 10)
+    pdf.cell(80, 5, txt="________________________________________", ln=True, align='C')
+    pdf.cell(80, 5, txt="Profissional avaliador", ln=True, align='C')
     
     return pdf.output(dest='S').encode('latin-1')
 
@@ -443,7 +450,10 @@ def main():
 
             # --- MONTAGEM DO RELATÓRIO FINAL ---
             nome_paciente = nome if nome else "Paciente nao identificada"
-            data_atual = datetime.now().strftime("%d/%m/%Y as %H:%M")
+            
+            # Ajuste do fuso horário para Brasília (UTC-3)
+            fuso_brasilia = timezone(timedelta(hours=-3))
+            data_atual = datetime.now(fuso_brasilia).strftime("%d/%m/%Y às %H:%M")
             
             relatorio_final = f"""RELATÓRIO CLÍNICO DE APOIO À DECISÃO - CESASCORE
 PACIENTE: {nome_paciente.upper()}
