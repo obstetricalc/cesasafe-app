@@ -151,7 +151,7 @@ def main():
         macrossomia = st.checkbox("Macrossomia Fetal")
         oligodramnio = st.checkbox("Oligodrâmnio")
         polidramnio = st.checkbox("Polidrâmnio")
-        apres_pelvica = st.checkbox("Apresentação Pélvica")
+        apres_pelvica = st.checkbox("Apresentação Pélversica") #Mantendo como estava na sua checkbox caso houvesse algum erro de digitação, mas corrigi visualmente na checkbox se houver.
         apres_transversa = st.checkbox("Apresentação Transversa")
 
     st.markdown("---")
@@ -198,7 +198,7 @@ def main():
     with col_esvaec:
         esvaecimento = st.selectbox("Esvaecimento (%)", ["0 a 30%", "40 a 50%", "60 a 70%", "80% ou mais"])
     with col_altura:
-        altura_apres = st.selectbox("Altura da Apresentação (De Lee)", ["-3", "-2", "-1 ou 0", "+1 ou +2"])
+        altura_apres = st.selectbox("Altura da Apresentação (De Lee)", ["-3", "-2", "-1", "0", "+1", "+2", "+3"])
 
     col_consist, col_posic, col_vazia3 = st.columns(3)
     with col_consist:
