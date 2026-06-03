@@ -39,21 +39,47 @@ def gerar_pdf(relatorio_texto, data_hora_str):
     pdf.set_font("Arial", size=11)
     texto_latin = relatorio_texto.encode('latin-1', 'replace').decode('latin-1')
     
+    # Lista de frases que devem ficar em negrito
+    bold_triggers = [
+        "RELATÓRIO CLÍNICO DE APOIO",
+        "PACIENTE:",
+        "1. AVALIAÇÃO MATERNA",
+        "2. CLASSIFICAÇÃO DE ROBSON",
+        "3. ÍNDICE DE BISHOP",
+        "4. AVALIAÇÃO PARA VBAC"
+    ]
+    # Converte os triggers para latin-1 para compatibilidade na busca
+    bold_triggers = [t.encode('latin-1', 'replace').decode('latin-1') for t in bold_triggers]
+    
     for linha in texto_latin.split('\n'):
         linha_limpa = linha.strip()
+        
+        # Gerencia o espaçamento de linhas vazias
+        if not linha_limpa:
+            pdf.ln(2)
+            continue
+            
+        # Verifica se a linha atual começa com algum dos textos que devem ser negritos
+        if any(linha_limpa.startswith(trigger) for trigger in bold_triggers):
+            pdf.set_font("Arial", 'B', 11)
+            pdf.multi_cell(0, 6, txt=linha)
+            pdf.set_font("Arial", '', 11) # Retorna ao normal para as próximas linhas
+            
         # Se a linha estiver entre parênteses, imprime em letra menor e itálico
-        if linha_limpa.startswith('(') and linha_limpa.endswith(')'):
+        elif linha_limpa.startswith('(') and linha_limpa.endswith(')'):
             pdf.set_font("Arial", 'I', 9)
             pdf.multi_cell(0, 5, txt=linha)
-            pdf.set_font("Arial", '', 11) # Volta ao normal
+            pdf.set_font("Arial", '', 11) # Retorna ao normal para as próximas linhas
+            
         else:
             pdf.multi_cell(0, 6, txt=linha)
     
-    # Aviso Legal no Rodapé
+    # Aviso Legal no Rodapé com marca texto amarelo e negrito
     pdf.ln(15)
     pdf.set_font("Arial", 'B', 9)
+    pdf.set_fill_color(255, 255, 0) # Cor amarela (RGB)
     aviso = "Aviso Legal: Esta ferramenta e um prototipo academico auxiliar, baseado em protocolos assistenciais. A decisao clinica final e de responsabilidade exclusiva do medico obstetra."
-    pdf.multi_cell(0, 5, txt=aviso)
+    pdf.multi_cell(0, 5, txt=aviso, fill=True)
     
     return pdf.output(dest='S').encode('latin-1')
 
