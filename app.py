@@ -19,20 +19,29 @@ st.set_page_config(
 # ==========================================
 class PDF(FPDF):
     def footer(self):
-        # Posiciona a 35 mm do fim da página (garante que fique sempre fixo no rodapé)
-        self.set_y(-35)
+        # Posiciona a 30 mm do fim da página (garante que fique sempre fixo no rodapé)
+        self.set_y(-30)
         
-        # Aviso Legal no Rodapé com marca texto verde claro e negrito
-        self.set_font("Arial", 'B', 9)
+        # Aviso Legal no Rodapé com marca texto verde claro, reduzido para caber em 1 linha
+        self.set_font("Arial", 'B', 8)
         self.set_fill_color(200, 240, 200) # Cor verde claro (RGB)
-        aviso = "Aviso Legal: Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. A decisão clínica final é de responsabilidade exclusiva do médico obstetra."
+        aviso = "Aviso Legal: Ferramenta acadêmica de apoio baseada em protocolos assistenciais. A decisão clínica final é de responsabilidade do médico obstetra."
         aviso_latin = aviso.encode('latin-1', 'replace').decode('latin-1')
-        self.multi_cell(0, 5, txt=aviso_latin, fill=True)
+        self.cell(0, 5, txt=aviso_latin, fill=True, ln=True, align='C')
         
-        # Linha de assinatura no rodapé recuado para o canto direito
         self.ln(5)
+        y_assinatura = self.get_y()
+        
+        # Data e Hora (Canto Oposto / Esquerdo)
         self.set_font("Arial", '', 10)
-        self.set_x(120) # Move o cursor para a direita
+        if hasattr(self, 'data_hora_str'):
+            texto_data = f"Relatório gerado em: {self.data_hora_str}".encode('latin-1', 'replace').decode('latin-1')
+            # Alinha a data na mesma altura do texto "Profissional avaliador" (y_assinatura + 5)
+            self.set_xy(10, y_assinatura + 5)
+            self.cell(90, 5, txt=texto_data, ln=False, align='L')
+            
+        # Linha de assinatura (Canto Direito)
+        self.set_xy(120, y_assinatura)
         self.cell(80, 5, txt="________________________________________", ln=True, align='C')
         self.set_x(120)
         self.cell(80, 5, txt="Profissional avaliador", ln=True, align='C')
@@ -40,8 +49,11 @@ class PDF(FPDF):
 def gerar_pdf(relatorio_texto, data_hora_str):
     pdf = PDF()
     
-    # Define uma margem inferior automática de 40mm para o texto nunca sobrepor o rodapé
-    pdf.set_auto_page_break(auto=True, margin=40)
+    # Passa a data e hora para a instância do PDF para o rodapé usar
+    pdf.data_hora_str = data_hora_str
+    
+    # Define uma margem inferior automática de 35mm para o texto nunca sobrepor o rodapé
+    pdf.set_auto_page_break(auto=True, margin=35)
     pdf.add_page()
     
     # Tenta inserir a logo
@@ -51,13 +63,7 @@ def gerar_pdf(relatorio_texto, data_hora_str):
     except:
         pdf.set_font("Arial", 'B', 14)
         pdf.cell(200, 10, txt="CESASCORE - RELATÓRIO", ln=True, align='C')
-        pdf.ln(10)
-
-    # Cabeçalho de Data e Hora
-    pdf.set_font("Arial", 'B', 10)
-    texto_cabecalho = f"Relatório gerado em: {data_hora_str}".encode('latin-1', 'replace').decode('latin-1')
-    pdf.cell(0, 10, txt=texto_cabecalho, ln=True, align='R')
-    pdf.ln(5)
+        pdf.ln(15)
 
     # Corpo do texto com inteligência de leitura de linhas
     texto_latin = relatorio_texto.encode('latin-1', 'replace').decode('latin-1')
@@ -97,8 +103,6 @@ def gerar_pdf(relatorio_texto, data_hora_str):
         else:
             pdf.set_font("Arial", '', 10)  # Texto descritivo normal em tamanho 10
             pdf.multi_cell(0, 5, txt=linha)
-    
-    # O rodapé agora é chamado automaticamente pela classe PDF() para cada página!
     
     return pdf.output(dest='S').encode('latin-1')
 
@@ -401,7 +405,7 @@ def main():
                 elif multipara:
                     if tem_cesarea_previa:
                         grupo_robson = "Grupo 5"
-                        descricao_robson = "Multíparas, feto único, cefalico, >= 37 semanas, com cesárea(s) prévia(s)."
+                        descricao_robson = "Multíparas, feto único, cefálico, >= 37 semanas, com cesárea(s) prévia(s)."
                         repercussao_robson = "Candidatas clássicas à prova de trabalho de parto (VBAC). O sucesso é viável, porém, na prática, este grupo concentra a maior parcela de cesarianas de repetição nos hospitais."
                     else:
                         if inicio_tp == "Espontâneo":
