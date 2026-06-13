@@ -268,18 +268,16 @@ def main():
 
     st.markdown("")
     
-    # --------------------------------------------------------------------------
-    # NOVO VISUAL: Comorbidades e Fatores Obstétricos usando multiselect
-    # --------------------------------------------------------------------------
     col_comorb, col_obst = st.columns(2)
     
     with col_comorb:
         comorbidades_selecionadas = st.multiselect(
             "Comorbidades Maternas",
             options=["Hipertensão Crônica", "Diabetes Pré-gestacional", "Obesidade", "Cardiopatias", "Doença Renal Crônica", "Doença Autoimune", "Outras"],
-            placeholder="Selecione as comorbidades..."
+            placeholder="Selecione as comorbidades...",
+            max_selections=7 # Esse parâmetro esconde o botão 'Select all'
         )
-        # Ponte para manter a lógica do laudo intacta
+        
         hipertensao = "Hipertensão Crônica" in comorbidades_selecionadas
         diabetes_previa = "Diabetes Pré-gestacional" in comorbidades_selecionadas
         obesidade_check = "Obesidade" in comorbidades_selecionadas
@@ -292,9 +290,10 @@ def main():
         obstetricas_selecionadas = st.multiselect(
             "Fatores Obstétricos da Gestação Atual",
             options=["Pré-eclâmpsia", "Diabetes Gestacional", "Placenta Prévia", "Gestação Gemelar", "Restrição de Crescimento Fetal", "Macrossomia Fetal", "Oligodrâmnio", "Polidrâmnio", "Apresentação Pélvica", "Apresentação Transversa"],
-            placeholder="Selecione os fatores..."
+            placeholder="Selecione os fatores...",
+            max_selections=10 # Esse parâmetro esconde o botão 'Select all'
         )
-        # Ponte para manter a lógica do laudo intacta
+        
         pre_eclampsia = "Pré-eclâmpsia" in obstetricas_selecionadas
         diabetes_gest = "Diabetes Gestacional" in obstetricas_selecionadas
         placenta_previa = "Placenta Prévia" in obstetricas_selecionadas
@@ -425,7 +424,7 @@ def main():
                 else:
                     grupo_robson = "Grupo 7"
                     descricao_robson = "Multíparas, feto único, apresentação pélvica."
-                repercussao_robson = "A apresentação pélvica está fortemente associada à indicação de parto cesáreo eletivo na maioria dos serviços, salvo protocolos para Versão Cefálica Externa (VCE) bem-sucedida."
+                repercussao_robson = "A presentation pélvica está fortemente associada à indicação de parto cesáreo eletivo na maioria dos serviços, salvo protocolos para Versão Cefálica Externa (VCE) bem-sucedida."
             elif ig_robson == "Pré-termo":
                 grupo_robson = "Grupo 10"
                 descricao_robson = "Feto único, apresentação cefálica, pré-termo (< 37 semanas)."
@@ -546,7 +545,6 @@ Repercussão na via de parto: {conclusao_vbac}
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     st.markdown("---")
     
-    # Aumentando as margens laterais (peso 4) para diminuir o tamanho das logos em ~50%
     col_margem_esq, col1, col2, col3, col_margem_dir = st.columns([4, 1, 1, 1, 4])
     
     with col1:
