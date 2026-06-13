@@ -533,7 +533,8 @@ Repercussão na via de parto: {conclusao_vbac}
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     st.markdown("---")
     
-    col_margem_esq, col1, col2, col3, col_margem_dir = st.columns([1.5, 1, 1, 1, 1.5])
+    # Aumentando as margens laterais (peso 4) para diminuir o tamanho das logos em ~50%
+    col_margem_esq, col1, col2, col3, col_margem_dir = st.columns([4, 1, 1, 1, 4])
     
     with col1:
         try:
