@@ -14,6 +14,10 @@ st.set_page_config(
     layout="wide"
 )
 
+# Definindo o fuso horário padrão (Brasília) para evitar inconsistências de data no servidor
+FUSO_BRASILIA = timezone(timedelta(hours=-3))
+HOJE_BRASILIA = datetime.now(FUSO_BRASILIA).date()
+
 # ==========================================
 # FUNÇÃO AUXILIAR: GERADOR DE PDF
 # ==========================================
@@ -111,14 +115,18 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             pdf.set_font("Arial", '', 10)  # Texto descritivo normal em tamanho 10
             pdf.multi_cell(0, 5, txt=linha)
     
-    return pdf.output(dest='S').encode('latin-1')
+    # Retorna o PDF como uma string de bytes estável
+    return bytes(pdf.output(dest='S'), encoding='latin-1')
 
 # ==========================================
 # INÍCIO DO APLICATIVO PRINCIPAL
 # ==========================================
 def main():
     # --- CABEÇALHO ---
-    st.image("logo.png", width=500) 
+    try:
+        st.image("logo.png", width=500) 
+    except:
+        st.title("CesaScore")
     
     st.markdown("""
     **Aviso Legal:** Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. 
@@ -131,9 +139,8 @@ def main():
     # ==========================================
     st.header("1. Identificação")
     
-    hoje = date.today()
-    data_minima = date(hoje.year - 60, 1, 1)
-    data_maxima = hoje
+    data_minima = date(HOJE_BRASILIA.year - 60, 1, 1)
+    data_maxima = HOJE_BRASILIA
     
     c1, c2, c3 = st.columns([2, 1, 1])
     
@@ -146,7 +153,7 @@ def main():
     with c3:
         idade = None
         if data_nasc:
-            idade = hoje.year - data_nasc.year - ((hoje.month, hoje.day) < (data_nasc.month, data_nasc.day))
+            idade = HOJE_BRASILIA.year - data_nasc.year - ((HOJE_BRASILIA.month, HOJE_BRASILIA.day) < (data_nasc.month, data_nasc.day))
             st.metric("Idade", f"{idade} anos")
 
     c4, c5, c6 = st.columns(3)
@@ -164,7 +171,6 @@ def main():
             st.metric("IMC Pré-gestacional", f"{imc:.1f} kg/m²")
 
     st.markdown("---")
-    # --- FIM DO BLOCO 1 ---
 
     # ==========================================
     # BLOCO 2: HISTÓRICO OBSTÉTRICO
@@ -200,21 +206,22 @@ def main():
             st.markdown("**Fatores Predicionais (MFMU):**")
             motivo_cesarea_parada = st.checkbox("Cesárea anterior foi por parada de progressão ou descida?")
             if partos_normais > 0:
-                vbac_previo = st.checkbox("A paciente já teve um parto normal APÓS a cesárea (VBAC prévio)?")
+                vbac_previo = st.checkbox("A paciente já teve um parto normal APÓS o parto cesáreo (VBAC prévio)?")
             else:
-                st.info("Paciente sem partos vaginais prévios registados.")
+                st.info("Paciente sem partos vaginais prévios registrados.")
 
     st.markdown("") 
     
     # --- Datação da Gestação (DUM) ---
     col_dum, col_ig_dum, col_dpp_dum = st.columns(3)
+    dias_gest = 280 # valor padrão caso não informada
     
     with col_dum:
         dum = st.date_input("DUM (Última Menstruação)", value=None, format="DD/MM/YYYY")
     
     with col_ig_dum:
         if dum:
-            dias_gest = (hoje - dum).days 
+            dias_gest = (HOJE_BRASILIA - dum).days 
             if dias_gest < 0: dias_gest = 0
             ig_sem = dias_gest // 7
             ig_dias = dias_gest % 7
@@ -234,11 +241,13 @@ def main():
     with col_ig_eco:
         if dpp_eco:
             dt_concepcao_eco = dpp_eco - timedelta(days=280)
-            dias_gest_eco = (hoje - dt_concepcao_eco).days
+            dias_gest_eco = (HOJE_BRASILIA - dt_concepcao_eco).days
             if dias_gest_eco < 0: dias_gest_eco = 0
             ig_sem_eco = dias_gest_eco // 7
             ig_dias_eco = dias_gest_eco % 7
             st.metric("IG (pela USG)", f"{ig_sem_eco} sem e {ig_dias_eco} dias")
+            # Se a USG for informada, pode ser usada preferencialmente para o cálculo clínico de Robson
+            dias_gest = dias_gest_eco
 
     st.markdown("")
     
@@ -269,14 +278,12 @@ def main():
         apres_transversa = st.checkbox("Apresentação Transversa")
 
     st.markdown("---")
-    # --- FIM DO BLOCO 2 ---
 
     # ==========================================
     # BLOCO 3: EXAME FÍSICO E OBSTÉTRICO
     # ==========================================
     st.header("3. Exame Físico e Obstétrico")
     
-    # --- Avaliação Fetal e Dinâmica Uterina ---
     st.subheader("Avaliação Fetal e Dinâmica Uterina")
     col_fetos, col_sit, col_apres, col_tp = st.columns(4)
     
@@ -321,7 +328,6 @@ def main():
         posicao_colo = st.selectbox("Posição do Colo", ["Posterior", "Centralizado", "Anterior"])
 
     st.markdown("---")
-    # --- FIM DO BLOCO 3 ---
 
     # ==========================================
     # BLOCO 4: RELATÓRIO FINAL DE APOIO À DECISÃO
@@ -344,7 +350,7 @@ def main():
             texto_imc = "IMC não calculado."
             if imc:
                 if imc >= 30:
-                    texto_imc = f"IMC: {imc:.1f} kg/m² (Obesidade).\nPredição de via de parto: A OMS alerta para maior risco de distócias, macrossomia fetal e falha na progressão. Aumenta substancialmente o risco basal de cesariana, embora a prova de trabalho de parto continue sendo recomendada."
+                    texto_imc = f"IMC: {imc:.1f} kg/m² (Obesidade).\nPredição de via de parto: A OMS alerta para maior risco de distócias, macrossomia fetal e falha na progressão. Aumenta substancialmente o risco basal de parto cesáreo, embora a prova de trabalho de parto continue sendo recomendada."
                 elif imc >= 25:
                     texto_imc = f"IMC: {imc:.1f} kg/m² (Sobrepeso).\nPredição de via de parto: Risco levemente aumentado para distócias de trajeto mole. Via vaginal continua sendo fortemente a via de eleição."
                 else:
@@ -362,14 +368,14 @@ def main():
             
             texto_riscos = ""
             if placenta_previa:
-                texto_riscos = "Fatores identificados (Gestação de alto risco): Placenta Prévia.\nPredição de via de parto: Indicação ABSOLUTA de cesariana. O parto vaginal está contraindicado pelo risco hemorrágico severo."
+                texto_riscos = "Fatores identificados (Gestação de alto risco): Placenta Prévia.\nPredição de via de parto: Indicação ABSOLUTA de parto cesáreo. O parto vaginal está contraindicado pelo risco hemorrágico severo."
             elif len(comorbidades_list) > 0:
-                texto_riscos = f"Fatores identificados (Gestação de alto risco): {', '.join(comorbidades_list)}.\nPredição de via de parto: Exigem monitoramento rigoroso intraparto e frequentemente indicam a necessidade de antecipação do parto (indução). Se o colo for desfavorável, a taxa de cesariana nestes grupos é superior à da população de risco habitual."
+                texto_riscos = f"Fatores identificados (Gestação de alto risco): {', '.join(comorbidades_list)}.\nPredição de via de parto: Exigem monitoramento rigoroso intraparto e frequentemente indicam a necessidade de antecipação do parto (indução). Se o colo for desfavorável, a taxa de parto cesáreo nestes grupos é superior à da população de risco habitual."
             else:
                 texto_riscos = "Fatores identificados: Nenhum fator de risco adicional detectado (Gestação de Risco Habitual).\nPredição de via de parto: Cenário extremamente favorável para condução de parto vaginal seguro."
 
             # --- 2. CÁLCULO DE ROBSON ---
-            ig_robson = "Termo" if (dias_gest if dum else 280) >= 259 else "Pré-termo"
+            ig_robson = "Termo" if dias_gest >= 259 else "Pré-termo"
             paridade_total = partos_normais + partos_cesareos
             nulipara = (paridade_total == 0)
             multipara = (paridade_total > 0)
@@ -382,11 +388,11 @@ def main():
             if tipo_gestacao == "Múltiplo (Gêmeos ou mais)":
                 grupo_robson = "Grupo 8"
                 descricao_robson = "Todas as gestantes com gestações múltiplas (incluindo cesárea prévia)."
-                repercussao_robson = "Alta taxa de cesariana, dependendo diretamente da apresentação do primeiro feto e de protocolos institucionais."
+                repercussao_robson = "Alta taxa de parto cesáreo, dependendo diretamente da apresentação do primeiro feto e de protocolos institucionais."
             elif apresentacao in ["Córmica"] or situacao in ["Transversa", "Oblíqua"]:
                 grupo_robson = "Grupo 9"
                 descricao_robson = "Feto único em situação transversa ou oblíqua."
-                repercussao_robson = "Indicação ABSOLUTA de cesariana na literatura atual. Via vaginal contraindicada."
+                repercussao_robson = "Indicação ABSOLUTA de parto cesáreo na literatura atual. Via vaginal contraindicada."
             elif apresentacao == "Pélvica":
                 if nulipara:
                     grupo_robson = "Grupo 6"
@@ -394,31 +400,31 @@ def main():
                 else:
                     grupo_robson = "Grupo 7"
                     descricao_robson = "Multíparas, feto único, apresentação pélvica."
-                repercussao_robson = "A apresentação pélvica está fortemente associada à indicação de cesariana eletiva na maioria dos serviços, salvo protocolos para Versão Cefálica Externa (VCE) bem-sucedida."
+                repercussao_robson = "A apresentação pélvica está fortemente associada à indicação de parto cesáreo eletivo na maioria dos serviços, salvo protocolos para Versão Cefálica Externa (VCE) bem-sucedida."
             elif ig_robson == "Pré-termo":
                 grupo_robson = "Grupo 10"
                 descricao_robson = "Feto único, apresentação cefálica, pré-termo (< 37 semanas)."
-                repercussao_robson = "A via de parto prioritariamente recomendada é a vaginal. Contudo, devido à maior intolerância fetal às contrações (SFA), a taxa estatística de resolução por cesárea é elevada."
+                repercussao_robson = "A via de parto prioritariamente recomendada é a vaginal. Contudo, devido à maior intolerância fetal às contrações (SFA), a taxa estatística de resolução por parto cesáreo é elevada."
             else:
                 if nulipara:
                     if inicio_tp == "Espontâneo":
                         grupo_robson = "Grupo 1"
                         descricao_robson = "Nulíparas, feto único, cefálico, >= 37 semanas, TP espontâneo."
-                        repercussao_robson = "Excelente prognóstico. Espera-se alta taxa de sucesso para parto vaginal. O Ministério da Saúde orienta envidar esforços para evitar a primeira cesárea neste grupo."
+                        repercussao_robson = "Excelente prognóstico. Espera-se alta taxa de sucesso para parto vaginal. O Ministério da Saúde orienta envidar esforços para evitar o primeiro parto cesáreo neste grupo."
                     else:
                         grupo_robson = "Grupo 2"
                         descricao_robson = "Nulíparas, feto único, cefálico, >= 37 semanas, induzido ou cesárea antes do TP."
-                        repercussao_robson = "Risco substancialmente aumentado de cesárea em razão do processo de indução em primigesta, especialmente se associado a colo uterino desfavorável (baixo escore de Bishop)."
+                        repercussao_robson = "Risco substancialmente aumentado de parto cesáreo em razão do processo de indução em primigesta, especialmente se associado a colo uterino desfavorável (baixo escore de Bishop)."
                 elif multipara:
                     if tem_cesarea_previa:
                         grupo_robson = "Grupo 5"
-                        descricao_robson = "Multíparas, feto único, cefalico, >= 37 semanas, com cesárea(s) prévia(s)."
-                        repercussao_robson = "Candidatas clássicas à prova de trabalho de parto (VBAC). O sucesso é viável, porém, na prática, este grupo concentra a maior parcela de cesarianas de repetição nos hospitais."
+                        descricao_robson = "Multíparas, feto único, cefálico, >= 37 semanas, com parto cesáreo prévio."
+                        repercussao_robson = "Candidatas clássicas à prova de trabalho de parto (VBAC). O sucesso é viável, porém, na prática, este grupo concentra a maior parcela de partos cesáreos de repetição nos hospitais."
                     else:
                         if inicio_tp == "Espontâneo":
                             grupo_robson = "Grupo 3"
                             descricao_robson = "Multíparas (sem cesárea prévia), feto único, cefálico, >= 37 semanas, TP espontâneo."
-                            repercussao_robson = "Altíssima probabilidade de parto vaginal rápido e bem-sucedido. O risco de cesárea neste cenário clínico é o menor de todos os grupos."
+                            repercussao_robson = "Altíssima probabilidade de parto vaginal rápido e bem-sucedido. O risco de parto cesáreo neste cenário clínico é o menor de todos os grupos."
                         else:
                             grupo_robson = "Grupo 4"
                             descricao_robson = "Multíparas (sem cesárea prévia), feto único, cefálico, >= 37 semanas, induzido ou cesárea antes do TP."
@@ -445,7 +451,7 @@ def main():
             elif posicao_colo == "Anterior": pontos_bishop += 2
             
             status_bishop = "Desfavorável" if pontos_bishop <= 6 else "Favorável"
-            repercussao_bishop = "O colo maduro favorece amplamente a progressão natural ou uma eventual indução, indicando alta probabilidade de desfecho vaginal com menor duração de trabalho de parto." if status_bishop == "Favorável" else "Colo imaturo. Maior risco de falha de indução e evolução para cesariana por parada de progressão. A literatura indica a necessidade de preparo cervical prévio (ex: métodos mecânicos ou prostaglandinas)."
+            repercussao_bishop = "O colo maduro favorece amplamente a progressão natural ou uma eventual indução, indicando alta probabilidade de desfecho vaginal com menor duração de trabalho de parto." if status_bishop == "Favorável" else "Colo imaturo. Maior risco de falha de indução e evolução para parto cesáreo por parada de progressão. A literatura indica a necessidade de preparo cervical prévio (ex: métodos mecânicos ou prostaglandinas)."
 
             # --- 4. AVALIAÇÃO VBAC ---
             texto_vbac = ""
@@ -453,30 +459,27 @@ def main():
             
             if tem_cesarea_previa:
                 fatores_vbac = []
-                if vbac_previo: fatores_vbac.append("Histórico de Parto Normal após cesárea (Fator fortemente favorável)")
+                if vbac_previo: fatores_vbac.append("Histórico de Parto Normal após parto cesáreo (Fator fortemente favorável)")
                 if motivo_cesarea_parada: fatores_vbac.append("Cesárea anterior por parada de progressão/descida (Fator desfavorável)")
                 if imc and imc >= 30: fatores_vbac.append("Obesidade - IMC >= 30 (Fator desfavorável)")
                 if idade and idade >= 35: fatores_vbac.append("Idade >= 35 anos (Fator desfavorável)")
                 
                 if not fatores_vbac:
                     texto_vbac = "Nenhum fator preditor adverso ou positivo extremo identificado. O risco assume o padrão basal."
-                    conclusao_vbac = "A paciente possui condições adequadas para a prova de trabalho de parto. A literatura indica taxas de sucesso (desfecho vaginal) entre 60% e 70%, o que desfavorece a indicação de cesárea eletiva imediata de repetição sem avaliação do quadro agudo."
+                    conclusao_vbac = "A paciente possui condições adequadas para a prova de trabalho de parto. A literatura indica taxas de sucesso (desfecho vaginal) entre 60% e 70%, o que desfavorece a indicação de parto cesáreo eletivo imediato de repetição sem avaliação do quadro agudo."
                 else:
                     texto_vbac = " | ".join(fatores_vbac)
                     if vbac_previo:
                         conclusao_vbac = "Predominância de fator favorável: O histórico de VBAC prévio eleva drasticamente a probabilidade estatística de novo sucesso (>80%). A conduta pende firmemente para tentativa de via vaginal."
                     else:
-                        conclusao_vbac = "Presença de fatores desfavoráveis: O cenário atual compromete o índice de sucesso basal calculado pelo modelo. Aumenta-se significativamente a chance real de que a tentativa de trabalho de parto culmine em nova cesariana."
+                        conclusao_vbac = "Presença de fatores desfavoráveis: O cenário atual compromete o índice de sucesso basal calculado pelo modelo. Aumenta-se significativamente a chance real de que a tentativa de trabalho de parto culmine em novo parto cesáreo."
             else:
-                texto_vbac = "Não aplicável. Paciente sem histórico de cesárea."
-                conclusao_vbac = "Sem repercussao (avaliar via de parto pelos demais fatores)."
+                texto_vbac = "Não aplicável. Paciente sem histórico de parto cesáreo."
+                conclusao_vbac = "Sem repercussão (avaliar via de parto pelos demais fatores)."
 
             # --- MONTAGEM DO RELATÓRIO FINAL ---
             nome_paciente = nome if nome else "Paciente não identificada"
-            
-            # Ajuste do fuso horário para Brasília (UTC-3)
-            fuso_brasilia = timezone(timedelta(hours=-3))
-            data_atual = datetime.now(fuso_brasilia).strftime("%d/%m/%Y às %H:%M")
+            data_atual_str = datetime.now(FUSO_BRASILIA).strftime("%d/%m/%Y às %H:%M")
             
             relatorio_final = f"""RELATÓRIO CLÍNICO DE APOIO À DECISÃO - CESASCORE
 PACIENTE: {nome_paciente.upper()}
@@ -487,7 +490,7 @@ PACIENTE: {nome_paciente.upper()}
 {texto_riscos}
 
 2. CLASSIFICAÇÃO DE ROBSON
-(A Classificação de Robson é padronizada pela OMS para categorizar gestantes, monitorar taxas de cesariana nos serviços e predizer a expectativa de via de parto.)
+(A Classificação de Robson é padronizada pela OMS para categorizar gestantes, monitorar taxas de parto cesáreo nos serviços e predizer a expectativa de via de parto.)
 Identificado: {descricao_robson}
 Classificação: {grupo_robson}
 Repercussão na via de parto: {repercussao_robson}
@@ -498,7 +501,7 @@ Identificado: Colo {status_bishop} (Pontuação total: {pontos_bishop})
 Repercussão na via de parto: {repercussao_bishop}
 
 4. AVALIAÇÃO PARA VBAC (Parto Vaginal após Cesárea)
-(O modelo matemático MFMU estima a probabilidade individualizada de sucesso de um parto normal após uma cesárea, servindo para o aconselhamento obstétrico embasado.)
+(O modelo matemático MFMU estima a probabilidade individualizada de sucesso de um parto normal após um parto cesáreo, servindo para o aconselhamento obstétrico embasado.)
 Identificado: {texto_vbac}
 Repercussão na via de parto: {conclusao_vbac}
 """
@@ -507,7 +510,7 @@ Repercussão na via de parto: {conclusao_vbac}
             st.text_area("Cópia de Texto Rápido (Prontuário):", relatorio_final, height=500)
             
             # Gera PDF
-            pdf_bytes = gerar_pdf(relatorio_final, data_atual)
+            pdf_bytes = gerar_pdf(relatorio_final, data_atual_str)
             
             st.download_button(
                 label="📥 Baixar Laudo Completo em PDF",
