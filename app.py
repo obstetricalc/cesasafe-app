@@ -143,6 +143,51 @@ def gerar_pdf(relatorio_texto, data_hora_str):
 # INÍCIO DO APLICATIVO PRINCIPAL
 # ==========================================
 def main():
+    # --- INJEÇÃO DE CSS PERSONALIZADO (DESIGN PREMIUM) ---
+    st.markdown("""
+    <style>
+        /* Cor principal dos títulos (H1, H2, H3) - Tom de Teal/Azul Médico */
+        h1, h2, h3, h4 {
+            color: #1A6B7C !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Botão Primário (Gerar Relatório) - Arredondado com sombra e efeito hover */
+        .stButton > button[kind="primary"] {
+            background-color: #1A6B7C !important;
+            color: white !important;
+            border-radius: 8px !important;
+            border: none !important;
+            padding: 0.5rem 1rem !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.3s ease !important;
+            font-weight: bold !important;
+        }
+        
+        /* Efeito de passar o mouse no Botão Primário */
+        .stButton > button[kind="primary"]:hover {
+            background-color: #124B57 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        /* Estilizando o valor das métricas (Idade, IMC, IG) para destacar na mesma cor */
+        div[data-testid="stMetricValue"] {
+            color: #1A6B7C !important;
+        }
+        
+        /* Estilizando as linhas divisórias para ficarem mais suaves e elegantes */
+        hr {
+            border-top: 1px solid #D8E3E6 !important;
+        }
+        
+        /* Caixas de Warning (Amarelo) e Info (Azul) com bordas mais arredondadas */
+        div[data-testid="stAlert"] {
+            border-radius: 8px !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
     try:
         st.image("logo.png", width=500) 
     except:
