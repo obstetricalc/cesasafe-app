@@ -27,9 +27,8 @@ def calcular_mfmu_vbac(idade, imc, parto_vaginal_previo, vbac_previo, motivo_ces
     MFMU atualizado (sem a variável de raça/etnia).
     """
     if idade is None or imc is None:
-        return None # Faltam dados essenciais para o cálculo
+        return None 
         
-    # Coeficientes do modelo revisado (Grobman)
     intercepto = 3.515
     coef_idade = -0.035 * idade
     coef_imc = -0.063 * imc
@@ -37,10 +36,8 @@ def calcular_mfmu_vbac(idade, imc, parto_vaginal_previo, vbac_previo, motivo_ces
     coef_vbac = 1.047 if vbac_previo else 0
     coef_parada = -0.638 if motivo_cesarea_parada else 0
     
-    # Equação de regressão logística
     w = intercepto + coef_idade + coef_imc + coef_vaginal + coef_vbac + coef_parada
     
-    # Cálculo da probabilidade (%)
     probabilidade = math.exp(w) / (1 + math.exp(w))
     return probabilidade * 100
 
@@ -49,31 +46,26 @@ def calcular_mfmu_vbac(idade, imc, parto_vaginal_previo, vbac_previo, motivo_ces
 # ==========================================
 class PDF(FPDF):
     def footer(self):
-        # Posiciona a 30 mm do fim da página
         self.set_y(-30)
         self.set_x(10)
         
-        # Aviso Legal no Rodapé com marca texto verde claro
         self.set_font("Arial", 'B', 8)
-        self.set_fill_color(200, 240, 200) # Cor verde claro (RGB)
+        self.set_fill_color(200, 240, 200)
         aviso = "Aviso Legal: Ferramenta acadêmica de apoio baseada em protocolos assistenciais. A decisão clínica final é de responsabilidade do médico obstetra."
         aviso_latin = aviso.encode('latin-1', 'replace').decode('latin-1')
         
-        # Calcula a largura exata da frase para o marca texto
         largura_texto = self.get_string_width(aviso_latin) + 4
         self.cell(largura_texto, 5, txt=aviso_latin, fill=True, ln=True, align='L')
         
         self.ln(5)
         y_assinatura = self.get_y()
         
-        # Data e Hora (Canto Esquerdo)
         self.set_font("Arial", '', 10)
         if hasattr(self, 'data_hora_str'):
             texto_data = f"Relatório gerado em: {self.data_hora_str}".encode('latin-1', 'replace').decode('latin-1')
             self.set_xy(10, y_assinatura + 5)
             self.cell(90, 5, txt=texto_data, ln=False, align='L')
             
-        # Linha de assinatura (Canto Direito)
         self.set_xy(120, y_assinatura)
         self.cell(80, 5, txt="________________________________________", ln=True, align='C')
         self.set_x(120)
@@ -82,14 +74,10 @@ class PDF(FPDF):
 def gerar_pdf(relatorio_texto, data_hora_str):
     pdf = PDF()
     
-    # Passa a data e hora para a instância do PDF
     pdf.data_hora_str = data_hora_str
-    
-    # Define uma margem inferior automática de 35mm
     pdf.set_auto_page_break(auto=True, margin=35)
     pdf.add_page()
     
-    # Tenta inserir a logo CENTRALIZADA
     try:
         pdf.image("logo.png", x=75, y=8, w=60)
         pdf.set_y(45) 
@@ -98,7 +86,6 @@ def gerar_pdf(relatorio_texto, data_hora_str):
         pdf.cell(200, 10, txt="CESASCORE - RELATÓRIO", ln=True, align='C')
         pdf.ln(15)
 
-    # Corpo do texto com inteligência de leitura de linhas
     texto_latin = relatorio_texto.encode('latin-1', 'replace').decode('latin-1')
     
     bold_triggers = [
@@ -118,24 +105,14 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             pdf.ln(2)
             continue
             
-        # Negrito para os títulos
         if any(linha_limpa.startswith(trigger) for trigger in bold_triggers):
             pdf.set_font("Arial", 'B', 11)
             pdf.multi_cell(0, 6, txt=linha)
             pdf.set_font("Arial", '', 10)
             
-        # Itálico para descrições entre parênteses
         elif linha_limpa.startswith('(') and linha_limpa.endswith(')'):
             pdf.set_font("Arial", 'I', 9)
             pdf.multi_cell(0, 5, txt=linha)
-            pdf.set_font("Arial", '', 10)
-            
-        # Destaque verde para o resultado da MFMU
-        elif "Probabilidade de Sucesso (MFMU):" in linha_limpa:
-            pdf.set_font("Arial", 'B', 10)
-            pdf.set_text_color(0, 100, 0) # Cor verde escura
-            pdf.multi_cell(0, 5, txt=linha)
-            pdf.set_text_color(0, 0, 0) # Retorna para preto
             pdf.set_font("Arial", '', 10)
             
         else:
@@ -148,7 +125,6 @@ def gerar_pdf(relatorio_texto, data_hora_str):
 # INÍCIO DO APLICATIVO PRINCIPAL
 # ==========================================
 def main():
-    # --- CABEÇALHO ---
     try:
         st.image("logo.png", width=500) 
     except:
@@ -203,7 +179,6 @@ def main():
     # ==========================================
     st.header("2. Histórico Obstétrico")
     
-    # --- Gestas e Paridade ---
     col_g, col_pn, col_pc, col_a = st.columns(4)
     with col_g:
         gestacoes = st.number_input("G (Gestações)", min_value=1, value=1, step=1)
@@ -214,7 +189,6 @@ def main():
     with col_a:
         abortos = st.number_input("A (Abortos)", min_value=0, value=0, step=1)
 
-    # --- Variáveis Combinadas de Risco e MFMU ---
     tempo_cesarea = None
     motivo_cesarea_parada = False
     vbac_previo = False
@@ -240,7 +214,6 @@ def main():
 
     st.markdown("") 
     
-    # --- Datação da Gestação ---
     col_dum, col_ig_dum, col_dpp_dum = st.columns(3)
     dias_gest = 280 
     
@@ -277,7 +250,6 @@ def main():
 
     st.markdown("")
     
-    # --- Comorbidades e Fatores de Risco ---
     col_comorb, col_obst = st.columns(2)
     
     with col_comorb:
@@ -360,9 +332,9 @@ def main():
     st.header("4. Relatório CesaScore")
     
     if st.button("Gerar Relatório de Apoio à Decisão", type="primary"):
-        with st.spinner("Processando dados, cálculos preditivos MFMU e interpretando diretrizes clínicas..."):
+        with st.spinner("Processando dados e interpretando diretrizes clínicas..."):
             
-            # --- 1. AVALIAÇÃO CLÍNICA MATERNA E RISCOS (VERSÃO COMPLETA) ---
+            # --- 1. AVALIAÇÃO CLÍNICA MATERNA E RISCOS ---
             texto_idade = "Idade não informada."
             if idade:
                 if idade >= 35:
@@ -399,7 +371,7 @@ def main():
             else:
                 texto_riscos = "Fatores identificados: Nenhum fator de risco adicional detectado (Gestação de Risco Habitual).\nPredição de via de parto: Cenário extremamente favorável para condução de parto vaginal seguro."
 
-            # --- 2. CÁLCULO DE ROBSON (VERSÃO COMPLETA) ---
+            # --- 2. CÁLCULO DE ROBSON ---
             ig_robson = "Termo" if dias_gest >= 259 else "Pré-termo"
             paridade_total = partos_normais + partos_cesareos
             nulipara = (paridade_total == 0)
@@ -454,7 +426,7 @@ def main():
                             descricao_robson = "Multíparas (sem cesárea prévia), feto único, cefálico, >= 37 semanas, induzido ou cesárea antes do TP."
                             repercussao_robson = "Excelente probabilidade de parto vaginal pela multiparidade, porém a necessidade de indução eleva levemente o risco de falha comparado ao grupo 3."
 
-            # --- 3. CÁLCULO DE BISHOP (VERSÃO COMPLETA) ---
+            # --- 3. CÁLCULO DE BISHOP ---
             pontos_bishop = 0
             if dilatacao == "1 a 2 cm": pontos_bishop += 1
             elif dilatacao == "3 a 4 cm": pontos_bishop += 2
@@ -477,10 +449,9 @@ def main():
             status_bishop = "Desfavorável" if pontos_bishop <= 6 else "Favorável"
             repercussao_bishop = "O colo maduro favorece amplamente a progressão natural ou uma eventual indução, indicando alta probabilidade de desfecho vaginal com menor duração de trabalho de parto." if status_bishop == "Favorável" else "Colo imaturo. Maior risco de falha de indução e evolução para parto cesáreo por parada de progressão. A literatura indica a necessidade de preparo cervical prévio (ex: métodos mecânicos ou prostaglandinas)."
 
-            # --- 4. AVALIAÇÃO VBAC E MFMU (VERSÃO COMPLETA E INTEGRADA) ---
+            # --- 4. AVALIAÇÃO VBAC ---
             texto_vbac = ""
             conclusao_vbac = ""
-            resultado_mfmu = ""
             
             if tem_cesarea_previa:
                 fatores_vbac = []
@@ -499,22 +470,12 @@ def main():
                     else:
                         conclusao_vbac = "Presença de fatores desfavoráveis: O cenário atual compromete o índice de sucesso basal calculado pelo modelo estatístico."
                 
-                # Executa o cálculo matemático do MFMU
-                probabilidade = calcular_mfmu_vbac(idade, imc, teve_parto_vaginal_previo, vbac_previo, motivo_cesarea_parada)
-                
-                if probabilidade is not None:
-                    resultado_mfmu = f"Probabilidade de Sucesso (MFMU): {probabilidade:.1f}%"
-                    if probabilidade >= 60.0:
-                        conclusao_vbac += "\nInterpretação MFMU: Cenário favorável. A probabilidade de sucesso supera a média basal, apoiando a Prova de Trabalho de Parto (TOLAC)."
-                    else:
-                        conclusao_vbac += "\nInterpretação MFMU: Probabilidade reduzida. Aumenta-se significativamente a chance real de que a tentativa de trabalho de parto culmine em novo parto cesáreo de repetição."
-                else:
-                    resultado_mfmu = "Probabilidade de Sucesso (MFMU): Indisponível (Preencha Idade e IMC na etapa de Identificação)."
+                # O cálculo matemático do MFMU continua rodando no fundo (probabilidade = calcular_mfmu_vbac(...))
+                # Mas sua exibição em texto foi removida a pedido.
 
             else:
                 texto_vbac = "Não aplicável. Paciente sem histórico de parto cesáreo."
-                conclusao_vbac = "Sem repercussão direta neste modelo matemático."
-                resultado_mfmu = "Não aplicável."
+                conclusao_vbac = "Sem repercussão direta."
 
             # --- MONTAGEM DO RELATÓRIO FINAL ---
             nome_paciente = nome if nome else "Paciente não identificada"
@@ -543,10 +504,9 @@ Repercussão na via de parto: {repercussao_bishop}
 (O modelo matemático MFMU estima a probabilidade individualizada de sucesso de um parto normal após um parto cesáreo, servindo para o aconselhamento obstétrico embasado.)
 Identificado: {texto_vbac}
 Repercussão na via de parto: {conclusao_vbac}
-{resultado_mfmu}
 """
             # Renderiza na Tela
-            st.success("Relatório de Apoio à Decisão com MFMU gerado com sucesso!")
+            st.success("Relatório de Apoio à Decisão gerado com sucesso!")
             st.text_area("Cópia de Texto Rápido (Prontuário):", relatorio_final, height=600)
             
             # Gera PDF
