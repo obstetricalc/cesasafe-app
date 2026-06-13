@@ -427,7 +427,7 @@ def main():
                 repercussao_robson = "A presentation pélvica está fortemente associada à indicação de parto cesáreo eletivo na maioria dos serviços, salvo protocolos para Versão Cefálica Externa (VCE) bem-sucedida."
             elif ig_robson == "Pré-termo":
                 grupo_robson = "Grupo 10"
-                descricao_robson = "Feto único, apresentação cefálica, pré-termo (< 37 semanas)."
+                descricao_robson = "Feto único, presentation cefálica, pré-termo (< 37 semanas)."
                 repercussao_robson = "A via de parto prioritariamente recomendada é a vaginal. Contudo, devido à maior intolerância fetal às contrações (SFA), a taxa estatística de resolução por parto cesáreo é elevada."
             else:
                 if nulipara:
@@ -564,6 +564,29 @@ Repercussão na via de parto: {conclusao_vbac}
             st.image("3.png", use_container_width=True)
         except:
             st.caption("CAPES")
+
+    # ==========================================
+    # INFORMAÇÕES DO RODAPÉ INSTITUCIONAL / AUTORIA
+    # ==========================================
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("---")
+    
+    col_f1, col_f2, col_f3 = st.columns([2, 2, 1])
+    
+    with col_f1:
+        st.markdown("**CesarScore**")
+        st.markdown("<div style='text-align: justify; font-size: 14px; color: gray;'>Aplicativo para predição da probabilidade de cirurgia cesariana utilizando escalas clínicas, desenvolvido para apoiar a tomada de decisão e qualificar a assistência obstétrica baseada em evidências científicas.</div>", unsafe_allow_html=True)
+
+    with col_f2:
+        st.markdown("**Sobre o Projeto**")
+        st.markdown("<div style='text-align: justify; font-size: 14px; color: gray;'>Produto técnico desenvolvido por Juliana da Costa Furtado no âmbito do Programa de Pós-Graduação em Cirurgia e Pesquisa Experimental (PPG-CIPE), com foco na inovação tecnológica aplicada à saúde materna e na qualificação do cuidado obstétrico.</div>", unsafe_allow_html=True)
+
+    with col_f3:
+        st.markdown("**Contato**")
+        st.markdown("<div style='font-size: 14px; color: gray;'>julianacostafurtado@gmail.com<br>Belém, Pará, Brasil</div>", unsafe_allow_html=True)
+        
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: center; font-size: 12px; color: gray;'>© 2026 Produto Técnico de Mestrado – CesarScore: Aplicativo para Predição de Cirurgia Cesariana Utilizando Escalas Clínicas.<br>Todos os direitos reservados.</div>", unsafe_allow_html=True)
 
 # ==========================================
 # COMANDO DE EXECUÇÃO
