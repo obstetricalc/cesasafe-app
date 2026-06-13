@@ -118,6 +118,24 @@ def gerar_pdf(relatorio_texto, data_hora_str):
         else:
             pdf.set_font("Arial", '', 10)
             pdf.multi_cell(0, 5, txt=linha)
+            
+    # --- INSERÇÃO DAS TRÊS LOGOS NO FINAL DO LAUDO PDF ---
+    try:
+        pdf.ln(10)
+        y_atual = pdf.get_y()
+        
+        # Se estiver muito perto do fim da página, move as logos para uma página nova
+        if y_atual > 220:
+            pdf.add_page()
+            y_atual = pdf.get_y() + 10
+            
+        # Coordenadas calculadas para centralizar as 3 logos (cada uma com 20mm de largura e 5mm de espaço)
+        # Total do bloco = 70mm. Posição inicial X = (210 - 70) / 2 = 70mm
+        pdf.image("logo_cipe.png", x=70, y=y_atual, w=20)
+        pdf.image("logo_uepa.png", x=95, y=y_atual, w=20)
+        pdf.image("logo_capes.png", x=120, y=y_atual, w=20)
+    except:
+        pass 
     
     return bytes(pdf.output(dest='S'), encoding='latin-1')
 
@@ -334,7 +352,6 @@ def main():
     if st.button("Gerar Relatório de Apoio à Decisão", type="primary"):
         with st.spinner("Processando dados e interpretando diretrizes clínicas..."):
             
-            # --- 1. AVALIAÇÃO CLÍNICA MATERNA E RISCOS ---
             texto_idade = "Idade não informada."
             if idade:
                 if idade >= 35:
@@ -371,7 +388,6 @@ def main():
             else:
                 texto_riscos = "Fatores identificados: Nenhum fator de risco adicional detectado (Gestação de Risco Habitual).\nPredição de via de parto: Cenário extremamente favorável para condução de parto vaginal seguro."
 
-            # --- 2. CÁLCULO DE ROBSON ---
             ig_robson = "Termo" if dias_gest >= 259 else "Pré-termo"
             paridade_total = partos_normais + partos_cesareos
             nulipara = (paridade_total == 0)
@@ -426,7 +442,6 @@ def main():
                             descricao_robson = "Multíparas (sem cesárea prévia), feto único, cefálico, >= 37 semanas, induzido ou cesárea antes do TP."
                             repercussao_robson = "Excelente probabilidade de parto vaginal pela multiparidade, porém a necessidade de indução eleva levemente o risco de falha comparado ao grupo 3."
 
-            # --- 3. CÁLCULO DE BISHOP ---
             pontos_bishop = 0
             if dilatacao == "1 a 2 cm": pontos_bishop += 1
             elif dilatacao == "3 a 4 cm": pontos_bishop += 2
@@ -449,7 +464,6 @@ def main():
             status_bishop = "Desfavorável" if pontos_bishop <= 6 else "Favorável"
             repercussao_bishop = "O colo maduro favorece amplamente a progressão natural ou uma eventual indução, indicando alta probabilidade de desfecho vaginal com menor duração de trabalho de parto." if status_bishop == "Favorável" else "Colo imaturo. Maior risco de falha de indução e evolução para parto cesáreo por parada de progressão. A literatura indica a necessidade de preparo cervical prévio (ex: métodos mecânicos ou prostaglandinas)."
 
-            # --- 4. AVALIAÇÃO VBAC ---
             texto_vbac = ""
             conclusao_vbac = ""
             
@@ -470,14 +484,13 @@ def main():
                     else:
                         conclusao_vbac = "Presença de fatores desfavoráveis: O cenário atual compromete o índice de sucesso basal calculado pelo modelo estatístico."
                 
-                # O cálculo matemático do MFMU continua rodando no fundo (probabilidade = calcular_mfmu_vbac(...))
-                # Mas sua exibição em texto foi removida a pedido.
+                # O cálculo matemático do MFMU continua rodando silenciosamente
+                probabilidade = calcular_mfmu_vbac(idade, imc, teve_parto_vaginal_previo, vbac_previo, motivo_cesarea_parada)
 
             else:
                 texto_vbac = "Não aplicável. Paciente sem histórico de parto cesáreo."
                 conclusao_vbac = "Sem repercussão direta."
 
-            # --- MONTAGEM DO RELATÓRIO FINAL ---
             nome_paciente = nome if nome else "Paciente não identificada"
             data_atual_str = datetime.now(FUSO_BRASILIA).strftime("%d/%m/%Y às %H:%M")
             
@@ -505,11 +518,9 @@ Repercussão na via de parto: {repercussao_bishop}
 Identificado: {texto_vbac}
 Repercussão na via de parto: {conclusao_vbac}
 """
-            # Renderiza na Tela
             st.success("Relatório de Apoio à Decisão gerado com sucesso!")
             st.text_area("Cópia de Texto Rápido (Prontuário):", relatorio_final, height=600)
             
-            # Gera PDF
             pdf_bytes = gerar_pdf(relatorio_final, data_atual_str)
             
             st.download_button(
@@ -518,6 +529,31 @@ Repercussão na via de parto: {conclusao_vbac}
                 file_name=f"CesaScore_Relatorio_{nome_paciente.replace(' ', '_')}.pdf",
                 mime="application/pdf"
             )
+
+    # --- INSERÇÃO DAS LOGOS INSTITUCIONAIS LADO A LADO NO SITE (RODAPÉ) ---
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    st.markdown("---")
+    
+    # Grid de 5 colunas para espremer e centralizar os 3 arquivos no meio da página
+    col_margem_esq, col1, col2, col3, col_margem_dir = st.columns([1.5, 1, 1, 1, 1.5])
+    
+    with col1:
+        try:
+            st.image("logo_cipe.png", use_container_width=True)
+        except:
+            st.caption("CIPE")
+            
+    with col2:
+        try:
+            st.image("logo_uepa.png", use_container_width=True)
+        except:
+            st.caption("UEPA")
+            
+    with col3:
+        try:
+            st.image("logo_capes.png", use_container_width=True)
+        except:
+            st.caption("CAPES")
 
 # ==========================================
 # COMANDO DE EXECUÇÃO
