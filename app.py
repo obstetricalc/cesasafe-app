@@ -108,20 +108,21 @@ def gerar_pdf(relatorio_texto, data_hora_str):
     pdf.ln(15) 
     
     # Se o espaço não for suficiente para a assinatura, pula de página para não cortar ao meio
-    if pdf.get_y() > 240:
+    if pdf.get_y() > 220: # Margem de segurança ajustada para o novo espaçamento
         pdf.add_page()
     
-    # Aviso Legal alinhado à margem esquerda
+    # Aviso Legal alinhado perfeitamente à margem do texto, ocupando 2 linhas se precisar
     pdf.set_x(10)
     pdf.set_font("Arial", 'B', 8)
     pdf.set_fill_color(200, 240, 200)
     aviso = "Aviso Legal: Ferramenta acadêmica de apoio baseada em protocolos assistenciais. A decisão clínica final é de responsabilidade do médico obstetra."
     aviso_latin = aviso.encode('latin-1', 'replace').decode('latin-1')
     
-    largura_texto = pdf.get_string_width(aviso_latin) + 4
-    pdf.cell(largura_texto, 5, txt=aviso_latin, fill=True, ln=True, align='L')
+    # Usando multi_cell para alinhar exatamente com as margens laterais do documento
+    pdf.multi_cell(0, 5, txt=aviso_latin, fill=True, align='L')
     
-    pdf.ln(10) # Espaço entre o aviso e a linha de assinatura
+    # Maior espaçamento (descendo a data/hora e assinatura)
+    pdf.ln(20) 
     y_assinatura = pdf.get_y()
     
     # Data e Hora (Esquerda)
