@@ -14,7 +14,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Definindo o fuso horário padrão (Brasília) para evitar inconsistências de data no servidor
+# Definindo o fuso horário padrão (Brasília)
 FUSO_BRASILIA = timezone(timedelta(hours=-3))
 HOJE_BRASILIA = datetime.now(FUSO_BRASILIA).date()
 
@@ -22,10 +22,6 @@ HOJE_BRASILIA = datetime.now(FUSO_BRASILIA).date()
 # CÁLCULOS PREDITIVOS (MFMU)
 # ==========================================
 def calcular_mfmu_vbac(idade, imc, parto_vaginal_previo, vbac_previo, motivo_cesarea_parada):
-    """
-    Calcula a probabilidade de sucesso de VBAC usando o modelo de regressão logística 
-    MFMU atualizado (sem a variável de raça/etnia).
-    """
     if idade is None or imc is None:
         return None 
         
@@ -46,38 +42,24 @@ def calcular_mfmu_vbac(idade, imc, parto_vaginal_previo, vbac_previo, motivo_ces
 # ==========================================
 class PDF(FPDF):
     def footer(self):
-        self.set_y(-30)
-        self.set_x(10)
-        
-        self.set_font("Arial", 'B', 8)
-        self.set_fill_color(200, 240, 200)
-        aviso = "Aviso Legal: Ferramenta acadêmica de apoio baseada em protocolos assistenciais. A decisão clínica final é de responsabilidade do médico obstetra."
-        aviso_latin = aviso.encode('latin-1', 'replace').decode('latin-1')
-        
-        largura_texto = self.get_string_width(aviso_latin) + 4
-        self.cell(largura_texto, 5, txt=aviso_latin, fill=True, ln=True, align='L')
-        
-        self.ln(5)
-        y_assinatura = self.get_y()
-        
-        self.set_font("Arial", '', 10)
-        if hasattr(self, 'data_hora_str'):
-            texto_data = f"Relatório gerado em: {self.data_hora_str}".encode('latin-1', 'replace').decode('latin-1')
-            self.set_xy(10, y_assinatura + 5)
-            self.cell(90, 5, txt=texto_data, ln=False, align='L')
-            
-        self.set_xy(120, y_assinatura)
-        self.cell(80, 5, txt="________________________________________", ln=True, align='C')
-        self.set_x(120)
-        self.cell(80, 5, txt="Profissional avaliador", ln=True, align='C')
+        # Esta função garante que as logos SEMPRE fiquem no rodapé da página (a 25mm do fundo)
+        self.set_y(-25)
+        try:
+            # Posições calculadas para centralizar as 3 imagens de 20mm cada
+            self.image("1.jpg", x=70, y=self.get_y(), w=20)
+            self.image("2.png", x=95, y=self.get_y(), w=20)
+            self.image("3.png", x=120, y=self.get_y(), w=20)
+        except:
+            pass
 
 def gerar_pdf(relatorio_texto, data_hora_str):
     pdf = PDF()
     
-    pdf.data_hora_str = data_hora_str
+    # Margem de 35mm no fundo garante que o texto nunca sobreponha as logos do rodapé
     pdf.set_auto_page_break(auto=True, margin=35)
     pdf.add_page()
     
+    # Cabeçalho
     try:
         pdf.image("logo.png", x=75, y=8, w=60)
         pdf.set_y(45) 
@@ -86,6 +68,7 @@ def gerar_pdf(relatorio_texto, data_hora_str):
         pdf.cell(200, 10, txt="CESASCORE - RELATÓRIO", ln=True, align='C')
         pdf.ln(15)
 
+    # Corpo do texto
     texto_latin = relatorio_texto.encode('latin-1', 'replace').decode('latin-1')
     
     bold_triggers = [
@@ -119,20 +102,39 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             pdf.set_font("Arial", '', 10)
             pdf.multi_cell(0, 5, txt=linha)
             
-    # --- INSERÇÃO DAS TRÊS LOGOS NUMERADAS NO FINAL DO LAUDO PDF ---
-    try:
-        pdf.ln(10)
-        y_atual = pdf.get_y()
-        
-        if y_atual > 220:
-            pdf.add_page()
-            y_atual = pdf.get_y() + 10
-            
-        pdf.image("1.jpg", x=70, y=y_atual, w=20)
-        pdf.image("2.png", x=95, y=y_atual, w=20)
-        pdf.image("3.png", x=120, y=y_atual, w=20)
-    except:
-        pass 
+    # --- FINAL DO TEXTO: AVISO LEGAL E ASSINATURA ---
+    
+    # 3 espaçamentos antes do Aviso Legal
+    pdf.ln(15) 
+    
+    # Se o espaço não for suficiente para a assinatura, pula de página para não cortar ao meio
+    if pdf.get_y() > 240:
+        pdf.add_page()
+    
+    # Aviso Legal alinhado à margem esquerda
+    pdf.set_x(10)
+    pdf.set_font("Arial", 'B', 8)
+    pdf.set_fill_color(200, 240, 200)
+    aviso = "Aviso Legal: Ferramenta acadêmica de apoio baseada em protocolos assistenciais. A decisão clínica final é de responsabilidade do médico obstetra."
+    aviso_latin = aviso.encode('latin-1', 'replace').decode('latin-1')
+    
+    largura_texto = pdf.get_string_width(aviso_latin) + 4
+    pdf.cell(largura_texto, 5, txt=aviso_latin, fill=True, ln=True, align='L')
+    
+    pdf.ln(10) # Espaço entre o aviso e a linha de assinatura
+    y_assinatura = pdf.get_y()
+    
+    # Data e Hora (Esquerda)
+    pdf.set_font("Arial", '', 10)
+    texto_data = f"Relatório gerado em: {data_hora_str}".encode('latin-1', 'replace').decode('latin-1')
+    pdf.set_xy(10, y_assinatura + 5)
+    pdf.cell(90, 5, txt=texto_data, ln=False, align='L')
+    
+    # Assinatura (Direita)
+    pdf.set_xy(120, y_assinatura)
+    pdf.cell(80, 5, txt="________________________________________", ln=True, align='C')
+    pdf.set_x(120)
+    pdf.cell(80, 5, txt="Profissional avaliador", ln=True, align='C')
     
     return bytes(pdf.output(dest='S'), encoding='latin-1')
 
