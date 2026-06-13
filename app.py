@@ -268,30 +268,43 @@ def main():
 
     st.markdown("")
     
+    # --------------------------------------------------------------------------
+    # NOVO VISUAL: Comorbidades e Fatores Obstétricos usando multiselect
+    # --------------------------------------------------------------------------
     col_comorb, col_obst = st.columns(2)
     
     with col_comorb:
-        st.markdown("**Comorbidades Maternas**")
-        hipertensao = st.checkbox("Hipertensão Crônica")
-        diabetes_previa = st.checkbox("Diabetes Pré-gestacional")
-        obesidade_check = st.checkbox("Obesidade")
-        cardiopatias = st.checkbox("Cardiopatias")
-        doenca_renal = st.checkbox("Doença Renal Crônica")
-        doenca_autoimune = st.checkbox("Doença Autoimune")
-        outras_comorb = st.checkbox("Outras")
+        comorbidades_selecionadas = st.multiselect(
+            "Comorbidades Maternas",
+            options=["Hipertensão Crônica", "Diabetes Pré-gestacional", "Obesidade", "Cardiopatias", "Doença Renal Crônica", "Doença Autoimune", "Outras"],
+            placeholder="Selecione as comorbidades..."
+        )
+        # Ponte para manter a lógica do laudo intacta
+        hipertensao = "Hipertensão Crônica" in comorbidades_selecionadas
+        diabetes_previa = "Diabetes Pré-gestacional" in comorbidades_selecionadas
+        obesidade_check = "Obesidade" in comorbidades_selecionadas
+        cardiopatias = "Cardiopatias" in comorbidades_selecionadas
+        doenca_renal = "Doença Renal Crônica" in comorbidades_selecionadas
+        doenca_autoimune = "Doença Autoimune" in comorbidades_selecionadas
+        outras_comorb = "Outras" in comorbidades_selecionadas
         
     with col_obst:
-        st.markdown("**Fatores Obstétricos da Gestação Atual**")
-        pre_eclampsia = st.checkbox("Pré-eclâmpsia")
-        diabetes_gest = st.checkbox("Diabetes Gestacional")
-        placenta_previa = st.checkbox("Placenta Prévia")
-        gemelar = st.checkbox("Gestação Gemelar")
-        ciur = st.checkbox("Restrição de Crescimento Fetal")
-        macrossomia = st.checkbox("Macrossomia Fetal")
-        oligodramnio = st.checkbox("Oligodrâmnio")
-        polidramnio = st.checkbox("Polidrâmnio")
-        apres_pelvica = st.checkbox("Apresentação Pélvica")
-        apres_transversa = st.checkbox("Apresentação Transversa")
+        obstetricas_selecionadas = st.multiselect(
+            "Fatores Obstétricos da Gestação Atual",
+            options=["Pré-eclâmpsia", "Diabetes Gestacional", "Placenta Prévia", "Gestação Gemelar", "Restrição de Crescimento Fetal", "Macrossomia Fetal", "Oligodrâmnio", "Polidrâmnio", "Apresentação Pélvica", "Apresentação Transversa"],
+            placeholder="Selecione os fatores..."
+        )
+        # Ponte para manter a lógica do laudo intacta
+        pre_eclampsia = "Pré-eclâmpsia" in obstetricas_selecionadas
+        diabetes_gest = "Diabetes Gestacional" in obstetricas_selecionadas
+        placenta_previa = "Placenta Prévia" in obstetricas_selecionadas
+        gemelar = "Gestação Gemelar" in obstetricas_selecionadas
+        ciur = "Restrição de Crescimento Fetal" in obstetricas_selecionadas
+        macrossomia = "Macrossomia Fetal" in obstetricas_selecionadas
+        oligodramnio = "Oligodrâmnio" in obstetricas_selecionadas
+        polidramnio = "Polidrâmnio" in obstetricas_selecionadas
+        apres_pelvica = "Apresentação Pélvica" in obstetricas_selecionadas
+        apres_transversa = "Apresentação Transversa" in obstetricas_selecionadas
 
     st.markdown("---")
 
