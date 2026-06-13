@@ -275,7 +275,7 @@ def main():
             "Comorbidades Maternas",
             options=["Hipertensão Crônica", "Diabetes Pré-gestacional", "Obesidade", "Cardiopatias", "Doença Renal Crônica", "Doença Autoimune", "Outras"],
             placeholder="Selecione as comorbidades...",
-            max_selections=7 # Esse parâmetro esconde o botão 'Select all'
+            max_selections=7
         )
         
         hipertensao = "Hipertensão Crônica" in comorbidades_selecionadas
@@ -291,7 +291,7 @@ def main():
             "Fatores Obstétricos da Gestação Atual",
             options=["Pré-eclâmpsia", "Diabetes Gestacional", "Placenta Prévia", "Gestação Gemelar", "Restrição de Crescimento Fetal", "Macrossomia Fetal", "Oligodrâmnio", "Polidrâmnio", "Apresentação Pélvica", "Apresentação Transversa"],
             placeholder="Selecione os fatores...",
-            max_selections=10 # Esse parâmetro esconde o botão 'Select all'
+            max_selections=10
         )
         
         pre_eclampsia = "Pré-eclâmpsia" in obstetricas_selecionadas
@@ -568,7 +568,6 @@ Repercussão na via de parto: {conclusao_vbac}
     # ==========================================
     # INFORMAÇÕES DO RODAPÉ INSTITUCIONAL / AUTORIA
     # ==========================================
-    st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown("---")
     
     col_f1, col_f2, col_f3 = st.columns([2, 2, 1])
