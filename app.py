@@ -42,33 +42,32 @@ def calcular_mfmu_vbac(idade, imc, parto_vaginal_previo, vbac_previo, motivo_ces
 # ==========================================
 class PDF(FPDF):
     def footer(self):
-        # Esta função garante que as logos SEMPRE fiquem no rodapé da página (a 25mm do fundo)
+        # Garante as logos numeradas obrigatoriamente fixadas no fundo do rodapé (margem de 25mm)
         self.set_y(-25)
         try:
-            # Posições calculadas para centralizar as 3 imagens de 20mm cada
-            self.image("1.jpg", x=70, y=self.get_y(), w=20)
-            self.image("2.png", x=95, y=self.get_y(), w=20)
-            self.image("3.png", x=120, y=self.get_y(), w=20)
+            self.image("1.jpg", 70, self.get_y(), 20)
+            self.image("2.png", 95, self.get_y(), 20)
+            self.image("3.png", 120, self.get_y(), 20)
         except:
             pass
 
 def gerar_pdf(relatorio_texto, data_hora_str):
     pdf = PDF()
     
-    # Margem de 35mm no fundo garante que o texto nunca sobreponha as logos do rodapé
-    pdf.set_auto_page_break(auto=True, margin=35)
+    # Define quebra automática deixando margem de 35mm para proteger as logos do rodapé
+    pdf.set_auto_page_break(True, margin=35)
     pdf.add_page()
     
-    # Cabeçalho
+    # Cabeçalho da Plataforma
     try:
-        pdf.image("logo.png", x=75, y=8, w=60)
+        pdf.image("logo.png", 75, 8, 60)
         pdf.set_y(45) 
     except:
         pdf.set_font("Arial", 'B', 14)
-        pdf.cell(200, 10, txt="CESASCORE - RELATÓRIO", ln=True, align='C')
+        pdf.cell(200, 10, "CESASCORE - RELATÓRIO", 0, 1, 'C')
         pdf.ln(15)
 
-    # Corpo do texto
+    # Processamento e escrita do corpo do relatório
     texto_latin = relatorio_texto.encode('latin-1', 'replace').decode('latin-1')
     
     bold_triggers = [
@@ -90,52 +89,53 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             
         if any(linha_limpa.startswith(trigger) for trigger in bold_triggers):
             pdf.set_font("Arial", 'B', 11)
-            pdf.multi_cell(0, 6, txt=linha)
+            pdf.multi_cell(190, 6, linha, 0, 'L')
             pdf.set_font("Arial", '', 10)
             
         elif linha_limpa.startswith('(') and linha_limpa.endswith(')'):
             pdf.set_font("Arial", 'I', 9)
-            pdf.multi_cell(0, 5, txt=linha)
+            pdf.multi_cell(190, 5, linha, 0, 'L')
             pdf.set_font("Arial", '', 10)
             
         else:
             pdf.set_font("Arial", '', 10)
-            pdf.multi_cell(0, 5, txt=linha)
+            pdf.multi_cell(190, 5, linha, 0, 'L')
             
-    # --- FINAL DO TEXTO: AVISO LEGAL E ASSINATURA ---
+    # --- DIAGRAMAÇÃO DO BLOCO FINAL (AVISO LEGAL, DATA E ASSINATURA) ---
     
-    # 3 espaçamentos antes do Aviso Legal
+    # 3 espaçamentos obrigatórios após o término do texto clínico
     pdf.ln(15) 
     
-    # Se o espaço não for suficiente para a assinatura, pula de página para não cortar ao meio
-    if pdf.get_y() > 220: # Margem de segurança ajustada para o novo espaçamento
+    # Se o espaço físico da página atual estiver apertado, joga o bloco final inteiro para a próxima folha
+    if pdf.get_y() > 210:
         pdf.add_page()
     
-    # Aviso Legal alinhado perfeitamente à margem do texto, ocupando 2 linhas se precisar
+    # Configuração do Aviso Legal (Alinhado perfeitamente com a margem do texto de cima)
     pdf.set_x(10)
     pdf.set_font("Arial", 'B', 8)
-    pdf.set_fill_color(200, 240, 200)
+    pdf.set_fill_color(200, 240, 200) # Fundo verde claro
+    
     aviso = "Aviso Legal: Ferramenta acadêmica de apoio baseada em protocolos assistenciais. A decisão clínica final é de responsabilidade do médico obstetra."
     aviso_latin = aviso.encode('latin-1', 'replace').decode('latin-1')
     
-    # Usando multi_cell para alinhar exatamente com as margens laterais do documento
-    pdf.multi_cell(0, 5, txt=aviso_latin, fill=True, align='L')
+    # multi_cell seguro com parâmetros posicionais limpos (largura total 190mm)
+    pdf.multi_cell(190, 5, aviso_latin, 0, 'L', True)
     
-    # Maior espaçamento (descendo a data/hora e assinatura)
+    # Desce o bloco de assinaturas para não ficar colado ao Aviso Legal
     pdf.ln(20) 
     y_assinatura = pdf.get_y()
     
-    # Data e Hora (Esquerda)
+    # Data e Hora de geração (Alinhado à esquerda)
     pdf.set_font("Arial", '', 10)
     texto_data = f"Relatório gerado em: {data_hora_str}".encode('latin-1', 'replace').decode('latin-1')
-    pdf.set_xy(10, y_assinatura + 5)
-    pdf.cell(90, 5, txt=texto_data, ln=False, align='L')
+    pdf.set_xy(10, y_assinatura)
+    pdf.cell(90, 5, texto_data, 0, 0, 'L')
     
-    # Assinatura (Direita)
+    # Linha e Campo de Assinatura (Alinhado à direita)
     pdf.set_xy(120, y_assinatura)
-    pdf.cell(80, 5, txt="________________________________________", ln=True, align='C')
+    pdf.cell(80, 5, "________________________________________", 0, 1, 'C')
     pdf.set_x(120)
-    pdf.cell(80, 5, txt="Profissional avaliador", ln=True, align='C')
+    pdf.cell(80, 5, "Profissional avaliador", 0, 1, 'C')
     
     return bytes(pdf.output(dest='S'), encoding='latin-1')
 
