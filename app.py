@@ -119,21 +119,18 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             pdf.set_font("Arial", '', 10)
             pdf.multi_cell(0, 5, txt=linha)
             
-    # --- INSERÇÃO DAS TRÊS LOGOS NO FINAL DO LAUDO PDF ---
+    # --- INSERÇÃO DAS TRÊS LOGOS NUMERADAS NO FINAL DO LAUDO PDF ---
     try:
         pdf.ln(10)
         y_atual = pdf.get_y()
         
-        # Se estiver muito perto do fim da página, move as logos para uma página nova
         if y_atual > 220:
             pdf.add_page()
             y_atual = pdf.get_y() + 10
             
-        # Coordenadas calculadas para centralizar as 3 logos (cada uma com 20mm de largura e 5mm de espaço)
-        # Total do bloco = 70mm. Posição inicial X = (210 - 70) / 2 = 70mm
-        pdf.image("logo_cipe.png", x=70, y=y_atual, w=20)
-        pdf.image("logo_uepa.png", x=95, y=y_atual, w=20)
-        pdf.image("logo_capes.png", x=120, y=y_atual, w=20)
+        pdf.image("1.jpg", x=70, y=y_atual, w=20)
+        pdf.image("2.png", x=95, y=y_atual, w=20)
+        pdf.image("3.png", x=120, y=y_atual, w=20)
     except:
         pass 
     
@@ -484,7 +481,6 @@ def main():
                     else:
                         conclusao_vbac = "Presença de fatores desfavoráveis: O cenário atual compromete o índice de sucesso basal calculado pelo modelo estatístico."
                 
-                # O cálculo matemático do MFMU continua rodando silenciosamente
                 probabilidade = calcular_mfmu_vbac(idade, imc, teve_parto_vaginal_previo, vbac_previo, motivo_cesarea_parada)
 
             else:
@@ -530,28 +526,27 @@ Repercussão na via de parto: {conclusao_vbac}
                 mime="application/pdf"
             )
 
-    # --- INSERÇÃO DAS LOGOS INSTITUCIONAIS LADO A LADO NO SITE (RODAPÉ) ---
+    # --- INSERÇÃO DAS LOGOS NUMERADAS LADO A LADO NO SITE (RODAPÉ) ---
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     st.markdown("---")
     
-    # Grid de 5 colunas para espremer e centralizar os 3 arquivos no meio da página
     col_margem_esq, col1, col2, col3, col_margem_dir = st.columns([1.5, 1, 1, 1, 1.5])
     
     with col1:
         try:
-            st.image("logo_cipe.png", use_container_width=True)
+            st.image("1.jpg", use_container_width=True)
         except:
             st.caption("CIPE")
             
     with col2:
         try:
-            st.image("logo_uepa.png", use_container_width=True)
+            st.image("2.png", use_container_width=True)
         except:
             st.caption("UEPA")
             
     with col3:
         try:
-            st.image("logo_capes.png", use_container_width=True)
+            st.image("3.png", use_container_width=True)
         except:
             st.caption("CAPES")
 
