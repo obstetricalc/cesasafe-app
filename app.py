@@ -97,7 +97,10 @@ def gerar_pdf(relatorio_texto, data_hora_str):
         "Fatores favoráveis ao parto cesariano:",
         "2. CLASSIFICAÇÃO DE ROBSON",
         "3. ÍNDICE DE BISHOP",
-        "4. AVALIAÇÃO PARA VBAC"
+        "4. AVALIAÇÃO PARA VBAC",
+        "Identificado:",
+        "Classificação:",
+        "Repercussão na via de parto:"
     ]
     bold_triggers = [t.encode('latin-1', 'replace').decode('latin-1') for t in bold_triggers]
     
@@ -105,7 +108,7 @@ def gerar_pdf(relatorio_texto, data_hora_str):
         linha_limpa = linha.strip()
         
         if not linha_limpa:
-            pdf.ln(2)
+            pdf.ln(3) # Aumentado sutilmente para criar um respiro entre os tópicos
             continue
             
         if any(linha_limpa.startswith(trigger) for trigger in bold_triggers):
@@ -257,7 +260,7 @@ def main():
         teve_parto_vaginal_previo = (partos_normais > 0)
         
         if tem_cesarea_previa:
-            st.warning("⚠️ Paciente com histórico de Parto Cesáreo Anterior (Avaliação para VBAC)")
+            st.warning("⚠️ Paciente com histórico de Partos Cesáreos Anteriores (Avaliação para VBAC)")
             
             col_vbac1, col_vbac2 = st.columns(2)
             with col_vbac1:
@@ -267,7 +270,7 @@ def main():
                 )
             with col_vbac2:
                 st.markdown("**Fatores Predicionais (MFMU):**")
-                motivo_cesarea_parada = st.checkbox("Cesárea anterior foi por parada de progressão ou descida?")
+                motivo_cesarea_parada = st.checkbox("Parto cesáreo anterior foi por parada de progressão ou descida?")
                 if teve_parto_vaginal_previo:
                     vbac_previo = st.checkbox("A paciente já teve um parto normal APÓS o parto cesáreo (VBAC prévio)?")
                 else:
@@ -365,7 +368,7 @@ def main():
             apresentacao = st.selectbox("Apresentação Fetal", ["Cefálica", "Pélvica", "Córmica"])
         
         with col_tp:
-            inicio_tp = st.selectbox("Início do Trabalho de Parto", ["Espontâneo", "Induzido", "Cesárea antes do TP"])
+            inicio_tp = st.selectbox("Início do Trabalho de Parto", ["Espontâneo", "Induzido", "Parto Cesáreo antes do TP"])
             
         col_au, col_bcf, col_du, col_vazia1 = st.columns(4)
         with col_au:
@@ -406,7 +409,6 @@ def main():
                     idade, imc_atual, comorbidades_selecionadas, obstetricas_selecionadas, placenta_previa
                 )
                 
-                # Substituindo '•' por hifens '-' para resolver o problema de encoding (?) no PDF
                 formatados_fav = "\n".join([f"- {f}" for f in lst_fav])
                 formatados_risco = "\n".join([f"- {f}" for f in lst_risco])
 
@@ -495,7 +497,7 @@ def main():
                 if tem_cesarea_previa:
                     fatores_vbac = []
                     if vbac_previo: fatores_vbac.append("Histórico de Parto Normal após parto cesáreo (Fator fortemente favorável)")
-                    if motivo_cesarea_parada: fatores_vbac.append("Cesárea anterior por parada de progressão/descida (Fator desfavorável)")
+                    if motivo_cesarea_parada: fatores_vbac.append("Parto cesáreo anterior por parada de progressão/descida (Fator desfavorável)")
                     if imc_atual and imc_atual >= 30: fatores_vbac.append("Obesidade atual (Fator desfavorável)")
                     if idade and idade >= 35: fatores_vbac.append("Idade >= 35 anos (Fator desfavorável)")
                     
@@ -509,10 +511,10 @@ def main():
                         else:
                             conclusao_vbac = "Presença de fatores desfavoráveis: O cenário atual compromete o índice de sucesso basal calculado pelo modelo estatístico."
                 else:
-                    texto_vbac = "Não aplicável. Paciente sem histórico de parto cesáreo."
+                    texto_vbac = "Não aplicável. Paciente sem histórico de partos cesáreos."
                     conclusao_vbac = "Sem repercussão direta."
 
-                # --- MONTAGEM FINAL ---
+                # --- MONTAGEM FINAL COM HIERARQUIA VISUAL APRIMORADA ---
                 nome_paciente = nome if nome else "Paciente não identificada"
                 data_atual_str = datetime.now(FUSO_BRASILIA).strftime("%d/%m/%Y às %H:%M")
                 
@@ -529,22 +531,36 @@ Fatores favoráveis ao parto cesariano:
 
 2. CLASSIFICAÇÃO DE ROBSON
 (A Classificação de Robson é padronizada pela OMS para categorizar gestantes, monitorar taxas de parto cesáreo nos serviços e predizer a expectativa de via de parto.)
-Identificado: {descricao_robson}
-Classificação: {grupo_robson}
-Repercussão na via de parto: {repercussao_robson}
+
+Identificado:
+{descricao_robson}
+
+Classificação:
+{grupo_robson}
+
+Repercussão na via de parto:
+{repercussao_robson}
 
 3. ÍNDICE DE BISHOP
 (O Índice de Bishop avalia clinicamente a maturidade cervical e prediz a probabilidade de sucesso de uma indução do trabalho de parto ou da sua progressão espontânea.)
-Identificado: Colo {status_bishop} (Pontuação total: {pontos_bishop})
-Repercussão na via de parto: {repercussao_bishop}
 
-4. AVALIAÇÃO PARA VBAC (Parto Vaginal após Cesárea)
+Identificado:
+Colo {status_bishop} (Pontuação total: {pontos_bishop})
+
+Repercussão na via de parto:
+{repercussao_bishop}
+
+4. AVALIAÇÃO PARA VBAC (Partos Vaginais após Partos Cesáreos)
 (O modelo matemático MFMU estima a probabilidade individualizada de sucesso de um parto normal após um parto cesáreo, servindo para o aconselhamento obstétrico embasado.)
-Identificado: {texto_vbac}
-Repercussão na via de parto: {conclusao_vbac}
+
+Identificado:
+{texto_vbac}
+
+Repercussão na via de parto:
+{conclusao_vbac}
 """
                 st.success("Relatório de Apoio à Decisão gerado com sucesso!")
-                st.text_area("Cópia de Texto Rápido (Prontuário):", relatorio_final, height=600)
+                st.text_area("Cópia de Texto Rápido (Prontuário):", relatorio_final, height=650)
                 
                 pdf_bytes = gerar_pdf(relatorio_final, data_atual_str)
                 
