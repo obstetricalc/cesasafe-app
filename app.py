@@ -89,30 +89,35 @@ def gerar_pdf(relatorio_texto, data_hora_str):
 
     texto_latin = relatorio_texto.encode('latin-1', 'replace').decode('latin-1')
     
-    # Títulos que receberão negrito na linha inteira
+    # Títulos principais (Maiores e em negrito na linha inteira)
     bold_triggers = [
         "RELATÓRIO CLÍNICO DE APOIO",
         "PACIENTE:",
         "1. IDENTIFICAÇÃO",
-        "Fatores favoráveis ao parto vaginal:",
-        "Fatores favoráveis ao parto cesariano:",
         "2. CLASSIFICAÇÃO DE ROBSON",
         "3. ÍNDICE DE BISHOP",
         "4. AVALIAÇÃO PARA VBAC"
     ]
     bold_triggers = [t.encode('latin-1', 'replace').decode('latin-1') for t in bold_triggers]
     
-    # Palavras que receberão negrito inline (na mesma linha)
-    inline_labels = ["Objetivo:", "Perfil identificado:", "Classificação:", "Interpretação clínica:"]
+    # Rótulos para formatação inline (Tamanho padrão, negrito apenas antes dos dois pontos)
+    inline_labels = [
+        "Fatores favoráveis ao parto vaginal:",
+        "Fatores favoráveis ao parto cesariano:",
+        "Objetivo:",
+        "Perfil identificado:",
+        "Classificação:",
+        "Interpretação clínica:"
+    ]
+    inline_labels = [t.encode('latin-1', 'replace').decode('latin-1') for t in inline_labels]
     
     for linha in texto_latin.split('\n'):
         linha_limpa = linha.strip()
         
         if not linha_limpa:
-            pdf.ln(3)
+            pdf.ln(3) 
             continue
             
-        # Cria uma linha cinza separadora quando encontrar as marcações (___)
         if linha_limpa.startswith("___"):
             pdf.ln(2)
             pdf.set_draw_color(220, 220, 220)
@@ -126,15 +131,14 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             pdf.set_font("Arial", '', 10)
             
         else:
-            # Identifica se a linha começa com algum dos Rótulos para aplicar negrito apenas nele
             is_inline = False
             for label in inline_labels:
                 if linha_limpa.startswith(label):
                     parts = linha.split(":", 1)
                     pdf.set_font("Arial", 'B', 10)
-                    pdf.write(6, parts[0] + ":")
+                    pdf.write(5, parts[0] + ":")
                     pdf.set_font("Arial", '', 10)
-                    pdf.write(6, parts[1] + "\n")
+                    pdf.write(5, parts[1] + "\n")
                     is_inline = True
                     break
             
@@ -426,8 +430,9 @@ def main():
                     idade, imc_atual, comorbidades_selecionadas, obstetricas_selecionadas, placenta_previa
                 )
                 
-                formatados_fav = "\n".join([f"- {f}" for f in lst_fav])
-                formatados_risco = "\n".join([f"- {f}" for f in lst_risco])
+                # Juntando os fatores na mesma linha (separados por espaço)
+                formatados_fav = " ".join(lst_fav)
+                formatados_risco = " ".join(lst_risco)
 
                 # --- LÓGICA DO TÓPICO 2 (ROBSON) ---
                 ig_robson = "Termo" if dias_gest >= 259 else "Pré-termo"
@@ -540,13 +545,11 @@ PACIENTE: {nome_paciente.upper()}
 
 1. IDENTIFICAÇÃO
 
-Fatores favoráveis ao parto vaginal:
-{formatados_fav}
+Fatores favoráveis ao parto vaginal: {formatados_fav}
 
-Fatores favoráveis ao parto cesariano:
-{formatados_risco}
+Fatores favoráveis ao parto cesariano: {formatados_risco}
 
-____________________________________________________________
+___
 
 2. CLASSIFICAÇÃO DE ROBSON
 
@@ -558,7 +561,7 @@ Classificação: {grupo_robson}
 
 Interpretação clínica: {repercussao_robson}
 
-____________________________________________________________
+___
 
 3. ÍNDICE DE BISHOP
 
@@ -568,7 +571,7 @@ Perfil identificado: Colo {status_bishop} (Pontuação total: {pontos_bishop})
 
 Interpretação clínica: {repercussao_bishop}
 
-____________________________________________________________
+___
 
 4. AVALIAÇÃO PARA VBAC (Partos Vaginais após Partos Cesáreos)
 
