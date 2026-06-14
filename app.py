@@ -146,10 +146,17 @@ def main():
     # --- INJEÇÃO DE CSS PERSONALIZADO (DESIGN PREMIUM) ---
     st.markdown("""
     <style>
-        /* Cor principal dos títulos (H1, H2, H3) - Tom de Teal/Azul Médico */
-        h1, h2, h3, h4 {
+        /* Cor principal dos títulos (H1, H2, H4) - Tom de Teal/Azul Médico */
+        h1, h2, h4 {
             color: #1A6B7C !important;
             font-weight: 600 !important;
+        }
+        
+        /* Ajuste específico para os subtítulos internos (H3) não ficarem gigantes no celular */
+        h3 {
+            color: #1A6B7C !important;
+            font-weight: 600 !important;
+            font-size: 1.15rem !important; /* Tamanho reduzido e elegante */
         }
         
         /* Botão Primário (Gerar Relatório) - Arredondado com sombra e efeito hover */
@@ -195,9 +202,9 @@ def main():
             margin-bottom: 1.5rem !important;
         }
         
-        /* Ajustando o texto do título do Expander para ficar com aparência de Cabeçalho */
+        /* Ajustando o texto do título do Expander para ficar com aparência de Cabeçalho Principal */
         div[data-testid="stExpander"] summary p {
-            font-size: 1.25rem !important;
+            font-size: 1.3rem !important; /* Título do menu sanfona maior que o texto de dentro */
             color: #1A6B7C !important;
             font-weight: 600 !important;
         }
