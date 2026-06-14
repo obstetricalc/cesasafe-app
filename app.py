@@ -186,14 +186,20 @@ def main():
             border-radius: 8px !important;
         }
 
-        /* Fundo levemente cinza e bordas sutis para os Cards (Containers) */
-        div[data-testid="stVerticalBlockBorderWrapper"] {
+        /* Estilizando os Expanders (Menus Sanfona) para manterem o visual de Card Premium */
+        div[data-testid="stExpander"] {
             border-radius: 12px !important;
             border: 1px solid #E2E8F0 !important;
             background-color: #F8FAFC !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-            padding: 1rem !important;
             margin-bottom: 1.5rem !important;
+        }
+        
+        /* Ajustando o texto do título do Expander para ficar com aparência de Cabeçalho */
+        div[data-testid="stExpander"] summary p {
+            font-size: 1.25rem !important;
+            color: #1A6B7C !important;
+            font-weight: 600 !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -212,9 +218,7 @@ def main():
     # ==========================================
     # BLOCO 1: IDENTIFICAÇÃO
     # ==========================================
-    st.header("1. Identificação")
-    
-    with st.container(border=True):
+    with st.expander("1. Identificação", expanded=True):
         data_minima = date(HOJE_BRASILIA.year - 60, 1, 1)
         data_maxima = HOJE_BRASILIA
         
@@ -249,9 +253,7 @@ def main():
     # ==========================================
     # BLOCO 2: HISTÓRICO OBSTÉTRICO
     # ==========================================
-    st.header("2. Histórico Obstétrico")
-    
-    with st.container(border=True):
+    with st.expander("2. Histórico Obstétrico", expanded=False):
         col_g, col_pn, col_pc, col_a = st.columns(4)
         with col_g:
             gestacoes = st.number_input("G (Gestações)", min_value=1, value=1, step=1)
@@ -363,9 +365,7 @@ def main():
     # ==========================================
     # BLOCO 3: EXAME FÍSICO E OBSTÉTRICO
     # ==========================================
-    st.header("3. Exame Físico e Obstétrico")
-    
-    with st.container(border=True):
+    with st.expander("3. Exame Físico e Obstétrico", expanded=False):
         st.subheader("Avaliação Fetal e Dinâmica Uterina")
         col_fetos, col_sit, col_apres, col_tp = st.columns(4)
         
@@ -411,9 +411,7 @@ def main():
     # ==========================================
     # BLOCO 4: RELATÓRIO FINAL DE APOIO À DECISÃO
     # ==========================================
-    st.header("4. Relatório CesaScore")
-    
-    with st.container(border=True):
+    with st.expander("4. Relatório CesaScore", expanded=False):
         if st.button("Gerar Relatório de Apoio à Decisão", type="primary"):
             with st.spinner("Processando dados e interpretando diretrizes clínicas..."):
                 
