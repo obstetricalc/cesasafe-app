@@ -255,19 +255,29 @@ def main():
                 idade = HOJE_BRASILIA.year - data_nasc.year - ((HOJE_BRASILIA.month, HOJE_BRASILIA.day) < (data_nasc.month, data_nasc.day))
                 st.metric("Idade", f"{idade} anos")
 
-        c4, c5, c6 = st.columns(3)
+        imc = None
+        imc_atual = None
+        
+        c4, c5, c6, c7 = st.columns(4)
         
         with c4:
             peso_pre_kg = st.number_input("Peso Pré-gestacional (kg)", min_value=30.0, max_value=250.0, value=None, step=0.1, format="%.1f", placeholder="Ex: 70.5")
             
         with c5:
-            altura_m = st.number_input("Altura (metros)", min_value=1.00, max_value=2.50, value=None, step=0.01, format="%.2f", placeholder="Ex: 1.60")
+            peso_atual_kg = st.number_input("Peso Atual (kg)", min_value=30.0, max_value=250.0, value=None, step=0.1, format="%.1f", placeholder="Ex: 80.0")
             
         with c6:
-            imc = None
-            if peso_pre_kg is not None and altura_m is not None and altura_m > 0:
-                imc = peso_pre_kg / (altura_m ** 2)
-                st.metric("IMC Pré-gestacional", f"{imc:.1f} kg/m²")
+            altura_cm = st.number_input("Altura (cm)", min_value=100.0, max_value=250.0, value=None, step=1.0, format="%.0f", placeholder="Ex: 160")
+            
+        with c7:
+            if altura_cm is not None and altura_cm > 0:
+                altura_m = altura_cm / 100.0
+                if peso_pre_kg is not None:
+                    imc = peso_pre_kg / (altura_m ** 2)
+                    st.metric("IMC Pré", f"{imc:.1f} kg/m²")
+                if peso_atual_kg is not None:
+                    imc_atual = peso_atual_kg / (altura_m ** 2)
+                    st.metric("IMC Atual", f"{imc_atual:.1f} kg/m²")
 
     # ==========================================
     # BLOCO 2: HISTÓRICO OBSTÉTRICO
@@ -443,14 +453,23 @@ def main():
                     else:
                         texto_idade = f"Idade: {idade} anos (Risco Habitual).\nPredição de via de parto: Fator sem risco adicional isolado. A literatura corrobora alta taxa de sucesso para evolução de parto vaginal."
                 
-                texto_imc = "IMC não calculado."
+                texto_imc = "IMC Pré-gestacional não calculado."
                 if imc:
                     if imc >= 30:
-                        texto_imc = f"IMC: {imc:.1f} kg/m² (Obesidade).\nPredição de via de parto: A OMS alerta para maior risco de distócias, macrossomia fetal e falha na progressão. Aumenta substancialmente o risco basal de parto cesáreo, embora a prova de trabalho de parto continue sendo recomendada."
+                        texto_imc = f"IMC Pré-gestacional: {imc:.1f} kg/m² (Obesidade).\nPredição de via de parto: A OMS alerta para maior risco de distócias, macrossomia fetal e falha na progressão. Aumenta substancialmente o risco basal de parto cesáreo, embora a prova de trabalho de parto continue sendo recomendada."
                     elif imc >= 25:
-                        texto_imc = f"IMC: {imc:.1f} kg/m² (Sobrepeso).\nPredição de via de parto: Risco levemente aumentado para distócias de trajeto mole. Via vaginal continua sendo fortemente a via de eleição."
+                        texto_imc = f"IMC Pré-gestacional: {imc:.1f} kg/m² (Sobrepeso).\nPredição de via de parto: Risco levemente aumentado para distócias de trajeto mole. Via vaginal continua sendo fortemente a via de eleição."
                     else:
-                        texto_imc = f"IMC: {imc:.1f} kg/m² (Eutrofia).\nPredição de via de parto: Padrão de normalidade. Fator preditor altamente favorável para o sucesso da resolução por parto vaginal."
+                        texto_imc = f"IMC Pré-gestacional: {imc:.1f} kg/m² (Eutrofia).\nPredição de via de parto: Padrão de normalidade. Fator preditor altamente favorável para o sucesso da resolução por parto vaginal."
+
+                texto_imc_atual = "IMC Atual não calculado."
+                if imc_atual:
+                    if imc_atual >= 30:
+                        texto_imc_atual = f"IMC Atual: {imc_atual:.1f} kg/m² (Obesidade).\nRepercussão atual: O peso materno elevado no momento do parto está associado a maior risco de distócia de partes moles, trabalho de parto prolongado e maiores taxas de falha na progressão, favorecendo a indicação de parto cesáreo e aumentando os riscos cirúrgicos/anestésicos."
+                    elif imc_atual >= 25:
+                        texto_imc_atual = f"IMC Atual: {imc_atual:.1f} kg/m² (Sobrepeso).\nRepercussão atual: Risco levemente aumentado para desvios e prolongamento do trabalho de parto. A via vaginal segue como padrão ouro com boas taxas de sucesso."
+                    else:
+                        texto_imc_atual = f"IMC Atual: {imc_atual:.1f} kg/m² (Eutrofia).\nRepercussão atual: Padrão de normalidade no momento do parto. Fator preditor clínico favorável, otimizando as chances de evolução para o desfecho vaginal."
 
                 comorbidades_list = []
                 if hipertensao: comorbidades_list.append("Hipertensão Crônica")
@@ -581,6 +600,7 @@ PACIENTE: {nome_paciente.upper()}
 1. AVALIAÇÃO MATERNA E FATORES DE RISCO
 {texto_idade}
 {texto_imc}
+{texto_imc_atual}
 {texto_riscos}
 
 2. CLASSIFICAÇÃO DE ROBSON
