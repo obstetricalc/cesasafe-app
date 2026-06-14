@@ -89,10 +89,8 @@ def gerar_pdf(relatorio_texto, data_hora_str):
 
     texto_latin = relatorio_texto.encode('latin-1', 'replace').decode('latin-1')
     
-    # Títulos principais (Maiores e em negrito na linha inteira)
+    # Títulos principais que recebem negrito na linha inteira
     bold_triggers = [
-        "RELATÓRIO CLÍNICO DE APOIO",
-        "PACIENTE:",
         "1. IDENTIFICAÇÃO",
         "2. CLASSIFICAÇÃO DE ROBSON",
         "3. ÍNDICE DE BISHOP",
@@ -100,7 +98,7 @@ def gerar_pdf(relatorio_texto, data_hora_str):
     ]
     bold_triggers = [t.encode('latin-1', 'replace').decode('latin-1') for t in bold_triggers]
     
-    # Rótulos para formatação inline (Tamanho padrão, negrito apenas antes dos dois pontos)
+    # Rótulos que recebem negrito apenas antes dos dois pontos (:)
     inline_labels = [
         "Fatores favoráveis ao parto vaginal:",
         "Fatores favoráveis ao parto cesariano:",
@@ -118,6 +116,18 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             pdf.ln(3) 
             continue
             
+        # Centralização do cabeçalho
+        if "RELATÓRIO CLÍNICO DE APOIO À DECISÃO - CESASCORE" in linha_limpa:
+            pdf.set_font("Arial", 'B', 12)
+            pdf.cell(190, 7, linha_limpa, 0, 1, 'C')
+            continue
+        if linha_limpa.startswith("PACIENTE:"):
+            pdf.set_font("Arial", 'B', 11)
+            pdf.cell(190, 7, linha_limpa, 0, 1, 'C')
+            pdf.ln(10) # Espaço gerando respiro após o cabeçalho
+            continue
+
+        # Linha separadora
         if linha_limpa.startswith("___"):
             pdf.ln(2)
             pdf.set_draw_color(220, 220, 220)
@@ -430,7 +440,6 @@ def main():
                     idade, imc_atual, comorbidades_selecionadas, obstetricas_selecionadas, placenta_previa
                 )
                 
-                # Juntando os fatores na mesma linha (separados por espaço)
                 formatados_fav = " ".join(lst_fav)
                 formatados_risco = " ".join(lst_risco)
 
@@ -537,7 +546,7 @@ def main():
                     conclusao_vbac = "Sem repercussão direta."
 
                 # --- MONTAGEM FINAL ---
-                nome_paciente = nome if nome else "Paciente não identificada"
+                nome_paciente = nome if nome else "PACIENTE NÃO IDENTIFICADA"
                 data_atual_str = datetime.now(FUSO_BRASILIA).strftime("%d/%m/%Y às %H:%M")
                 
                 relatorio_final = f"""RELATÓRIO CLÍNICO DE APOIO À DECISÃO - CESASCORE
