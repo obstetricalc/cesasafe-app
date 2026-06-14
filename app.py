@@ -146,9 +146,9 @@ def main():
     # --- INJEÇÃO DE CSS PERSONALIZADO (DESIGN PREMIUM) ---
     st.markdown("""
     <style>
-        /* Fundo da página em degradê (Verde/Teal clarinho no topo para mais escuro em baixo) */
+        /* Fundo da página em degradê MAIS EVIDENTE (Verde clarinho no topo para verde mais escuro/forte em baixo) */
         .stApp {
-            background: linear-gradient(to bottom, #F0F8F7 0%, #A8D5D2 100%) !important;
+            background: linear-gradient(to bottom, #DCF0EE 0%, #4A948C 100%) !important;
             background-attachment: fixed !important;
         }
         
@@ -202,7 +202,7 @@ def main():
         /* Caixas de Warning (Amarelo) e Info (Azul) com bordas mais arredondadas */
         div[data-testid="stAlert"] {
             border-radius: 8px !important;
-            background-color: rgba(255, 255, 255, 0.8) !important; /* Deixa o fundo do aviso levemente transparente */
+            background-color: rgba(255, 255, 255, 0.85) !important; /* Deixa o fundo do aviso levemente transparente */
         }
 
         /* Estilizando os Expanders (Menus Sanfona) para manterem o visual de Card Premium e destacarem no degradê */
@@ -564,7 +564,7 @@ def main():
                         if vbac_previo:
                             conclusao_vbac = "Predominância de fator favorável: O histórico de VBAC prévio eleva drasticamente a probabilidade estatística de novo sucesso (>80%). A conduta pende firmemente para tentativa de via vaginal."
                         else:
-                            conclusao_vbac = "Presença de factors desfavoráveis: O cenário atual compromete o índice de sucesso basal calculado pelo modelo estatístico."
+                            conclusao_vbac = "Presença de fatores desfavoráveis: O cenário atual compromete o índice de sucesso basal calculado pelo modelo estatístico."
                     
                     probabilidade = calcular_mfmu_vbac(idade, imc, teve_parto_vaginal_previo, vbac_previo, motivo_cesarea_parada)
 
