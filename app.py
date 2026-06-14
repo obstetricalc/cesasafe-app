@@ -143,41 +143,40 @@ def gerar_pdf(relatorio_texto, data_hora_str):
 # INÍCIO DO APLICATIVO PRINCIPAL
 # ==========================================
 def main():
-    # --- INJEÇÃO DE CSS PERSONALIZADO (DESIGN PREMIUM) ---
+    # --- INJEÇÃO DE CSS PERSONALIZADO (DESIGN MINIMALISTA CLÍNICO) ---
     st.markdown("""
     <style>
-        /* Fundo da página em degradê MAIS EVIDENTE (Verde clarinho no topo para verde mais escuro/forte em baixo) */
+        /* Fundo da página: Cor Gelo/Clean */
         .stApp {
-            background: linear-gradient(to bottom, #DCF0EE 0%, #4A948C 100%) !important;
-            background-attachment: fixed !important;
+            background-color: #F8FAFC !important;
         }
         
-        /* Deixa a faixa de cabeçalho do Streamlit transparente para não cortar o degradê */
+        /* Deixa a faixa de cabeçalho do Streamlit transparente */
         [data-testid="stHeader"] {
             background-color: transparent !important;
         }
 
-        /* Cor principal dos títulos (H1, H2, H4) - Tom de Teal/Azul Médico */
+        /* Cor principal dos títulos gerais - Azul Marinho Escuro da Logo */
         h1, h2, h4 {
-            color: #1A6B7C !important;
+            color: #0B3B60 !important;
             font-weight: 600 !important;
         }
         
-        /* Ajuste específico para os subtítulos internos (H3) não ficarem gigantes no celular */
+        /* Ajuste específico para os subtítulos internos (H3) - Teal da Logo */
         h3 {
             color: #1A6B7C !important;
             font-weight: 600 !important;
             font-size: 1.15rem !important;
         }
         
-        /* Botão Primário (Gerar Relatório) - Arredondado com sombra e efeito hover */
+        /* Botão Primário (Gerar Relatório) */
         .stButton > button[kind="primary"] {
             background-color: #1A6B7C !important;
             color: white !important;
             border-radius: 8px !important;
             border: none !important;
             padding: 0.5rem 1rem !important;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
             transition: all 0.3s ease !important;
             font-weight: bold !important;
         }
@@ -186,35 +185,36 @@ def main():
         .stButton > button[kind="primary"]:hover {
             background-color: #124B57 !important;
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2) !important;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
         }
         
-        /* Estilizando o valor das métricas (Idade, IMC, IG) para destacar na mesma cor */
+        /* Estilizando o valor das métricas (Idade, IMC, IG) */
         div[data-testid="stMetricValue"] {
             color: #1A6B7C !important;
         }
         
-        /* Estilizando as linhas divisórias para ficarem mais suaves e elegantes */
+        /* Estilizando as linhas divisórias para ficarem suaves */
         hr {
-            border-top: 1px solid #D8E3E6 !important;
+            border-top: 1px solid #E2E8F0 !important;
         }
         
-        /* Caixas de Warning (Amarelo) e Info (Azul) com bordas mais arredondadas */
+        /* Caixas de Warning (Amarelo) e Info (Azul) minimalistas */
         div[data-testid="stAlert"] {
             border-radius: 8px !important;
-            background-color: rgba(255, 255, 255, 0.85) !important; /* Deixa o fundo do aviso levemente transparente */
+            border: none !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
         }
 
-        /* Estilizando os Expanders (Menus Sanfona) para manterem o visual de Card Premium e destacarem no degradê */
+        /* Expanders (Cartões flutuantes brancos) */
         div[data-testid="stExpander"] {
             border-radius: 12px !important;
-            border: 1px solid #E2E8F0 !important;
-            background-color: rgba(255, 255, 255, 0.95) !important; /* Branco quase total para dar contraste com o degradê */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08) !important;
+            border: 1px solid #F1F5F9 !important; /* Borda ultra suave */
+            background-color: #FFFFFF !important; /* Branco puro */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important; /* Sombra elegante Apple-like */
             margin-bottom: 1.5rem !important;
         }
         
-        /* Ajustando o texto do título do Expander para a cor AZUL ESCURO da logo */
+        /* Texto do título do Expander */
         div[data-testid="stExpander"] summary p {
             font-size: 1.3rem !important;
             color: #0B3B60 !important;
