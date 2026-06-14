@@ -202,10 +202,10 @@ def main():
             margin-bottom: 1.5rem !important;
         }
         
-        /* Ajustando o texto do título do Expander para ficar com aparência de Cabeçalho Principal */
+        /* Ajustando o texto do título do Expander para a cor AZUL ESCURO da logo */
         div[data-testid="stExpander"] summary p {
-            font-size: 1.3rem !important; /* Título do menu sanfona maior que o texto de dentro */
-            color: #1A6B7C !important;
+            font-size: 1.3rem !important;
+            color: #0B3B60 !important; /* NOVO: Tom azul marinho escuro inspirado na logo */
             font-weight: 600 !important;
         }
     </style>
