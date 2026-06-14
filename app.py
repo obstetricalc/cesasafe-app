@@ -56,36 +56,9 @@ def avaliar_dados_identificacao(idade, imc_atual, comorbidades, obstetricas, pla
     for o in obstetricas: risco.append(f"Intercorrência obstétrica associada: {o}.")
 
     if not fav: fav.append("Ausência de marcadores preditivos favoráveis isolados neste bloco basal.")
-    if not risco: risco.append("Nenhum fator de risco clínico ou biomecânico adicional detectado.")
+    if not risco: risco.append("Nenhum fator clínico ou biomecânico adicional detectado.")
 
-    # 2. Interpretação na Literatura
-    lit = []
-    if idade is not None and idade >= 35:
-        lit.append("A senescência fisiológica das fibras uterinas associa-se a um limiar reduzido para distócia funcional e menor complacência aos estressores do trabalho de parto.")
-    if idade is not None and idade < 15:
-        lit.append("A restrição anatômica de estruturas ósseas pélvicas em maturação frequentemente cursa com desproporção cefalopélvica anatômica.")
-    if imc_atual is not None and imc_atual >= 30:
-        lit.append("Estudos correlacionam o espessamento de partes moles pélvicas ao atraso na fase ativa, elevando substancialmente as taxas de fadiga uterina e insucesso de progressão.")
-    if placenta_previa:
-        lit.append("A inserção anômala placentária é condição clínica formalmente excludente da via vaginal devido ao risco hemorrágico de letalidade severa para o binômio.")
-    elif len(comorbidades) > 0 or len(obstetricas) > 0:
-        lit.append("A coexistência de intercorrências patológicas (clínicas ou obstétricas) restringe o tempo de tolerância fetal à hipóxia transitória do parto, demandando limiares rigorosos para intervenção médica.")
-    
-    if not lit:
-        lit.append("A matriz de parâmetros clínicos basais da paciente encontra-se alinhada aos padrões de evolução fisiológica, sem desvios patológicos que exijam restrições descritas em literatura específica.")
-
-    # 3 e 4. Síntese e Conclusão
-    if placenta_previa:
-        sintese = "A compilação dos dados maternos sinaliza barreiras mecânicas e hemorrágicas absolutas, estabelecendo um bloqueio irrevogável para a estática do canal de parto."
-        conclusao = "Os achados clínicos estabelecem a contraindicação para o trabalho de parto, sugerindo avaliação individualizada para a resolução ativa embasada na proteção do binômio."
-    elif len(comorbidades) > 0 or len(obstetricas) > 0 or (imc_atual is not None and imc_atual >= 30) or (idade is not None and idade >= 35):
-        sintese = "Identifica-se um perfil obstétrico caracterizado pelo somatório de variáveis de vulnerabilidade que estreitam a margem de segurança no processo de evolução pélvica."
-        conclusao = "A intersecção de achados sugere que a progressão pode incorrer em obstáculos; indica-se a manutenção prudente do parto com vigilância aumentada e avaliação individualizada constante."
-    else:
-        sintese = "A matriz atual de dados consolida a plena preservação das dimensões biomecânicas e de adaptabilidade tecidual materna, sem detectabilidade de restrições ou barreiras funcionais."
-        conclusao = "Os dados da avaliação materna inicial não sugerem impedimentos, respaldando a condução obstétrica habitual baseada na evolução fisiológica."
-
-    return fav, risco, "\n".join([f"• {l}" for l in lit]), sintese, conclusao
+    return fav, risco
 
 # ==========================================
 # FUNÇÃO AUXILIAR: GERADOR DE PDF
@@ -121,10 +94,7 @@ def gerar_pdf(relatorio_texto, data_hora_str):
         "PACIENTE:",
         "1. IDENTIFICAÇÃO",
         "Fatores favoráveis ao parto vaginal:",
-        "Fatores associados ao aumento do risco de cesariana:",
-        "Interpretação Baseada na Literatura:",
-        "Síntese Integrada:",
-        "Conclusão da Avaliação Materna:",
+        "Fatores favoráveis ao parto cesariano:",
         "2. CLASSIFICAÇÃO DE ROBSON",
         "3. ÍNDICE DE BISHOP",
         "4. AVALIAÇÃO PARA VBAC"
@@ -429,15 +399,16 @@ def main():
     # ==========================================
     with st.expander("4. Relatório CesaScore", expanded=False):
         if st.button("Gerar Relatório de Apoio à Decisão", type="primary"):
-            with st.spinner("Processando dados e interpretando diretrizes clínicas..."):
+            with st.spinner("Processando análise clínica..."):
                 
                 # --- LÓGICA DO TÓPICO 1 (NOVA ABORDAGEM CLÍNICA) ---
-                lst_fav, lst_risco, texto_lit, texto_sintese, texto_conclusao = avaliar_dados_identificacao(
+                lst_fav, lst_risco = avaliar_dados_identificacao(
                     idade, imc_atual, comorbidades_selecionadas, obstetricas_selecionadas, placenta_previa
                 )
                 
-                formatados_fav = "\n".join([f"• {f}" for f in lst_fav])
-                formatados_risco = "\n".join([f"• {f}" for f in lst_risco])
+                # Substituindo '•' por hifens '-' para resolver o problema de encoding (?) no PDF
+                formatados_fav = "\n".join([f"- {f}" for f in lst_fav])
+                formatados_risco = "\n".join([f"- {f}" for f in lst_risco])
 
                 # --- LÓGICA DO TÓPICO 2 (ROBSON - MANTIDA INTACTA) ---
                 ig_robson = "Termo" if dias_gest >= 259 else "Pré-termo"
@@ -548,22 +519,13 @@ def main():
                 relatorio_final = f"""RELATÓRIO CLÍNICO DE APOIO À DECISÃO - CESASCORE
 PACIENTE: {nome_paciente.upper()}
 
-1. IDENTIFICAÇÃO (AVALIAÇÃO MATERNA E FATORES DE RISCO)
+1. IDENTIFICAÇÃO
 
 Fatores favoráveis ao parto vaginal:
 {formatados_fav}
 
-Fatores associados ao aumento do risco de cesariana:
+Fatores favoráveis ao parto cesariano:
 {formatados_risco}
-
-Interpretação Baseada na Literatura:
-{texto_lit}
-
-Síntese Integrada:
-{texto_sintese}
-
-Conclusão da Avaliação Materna:
-{texto_conclusao}
 
 2. CLASSIFICAÇÃO DE ROBSON
 (A Classificação de Robson é padronizada pela OMS para categorizar gestantes, monitorar taxas de parto cesáreo nos serviços e predizer a expectativa de via de parto.)
