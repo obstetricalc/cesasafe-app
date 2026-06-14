@@ -89,6 +89,7 @@ def gerar_pdf(relatorio_texto, data_hora_str):
 
     texto_latin = relatorio_texto.encode('latin-1', 'replace').decode('latin-1')
     
+    # Títulos que receberão negrito na linha inteira
     bold_triggers = [
         "RELATÓRIO CLÍNICO DE APOIO",
         "PACIENTE:",
@@ -97,18 +98,26 @@ def gerar_pdf(relatorio_texto, data_hora_str):
         "Fatores favoráveis ao parto cesariano:",
         "2. CLASSIFICAÇÃO DE ROBSON",
         "3. ÍNDICE DE BISHOP",
-        "4. AVALIAÇÃO PARA VBAC",
-        "Identificado:",
-        "Classificação:",
-        "Repercussão na via de parto:"
+        "4. AVALIAÇÃO PARA VBAC"
     ]
     bold_triggers = [t.encode('latin-1', 'replace').decode('latin-1') for t in bold_triggers]
+    
+    # Palavras que receberão negrito inline (na mesma linha)
+    inline_labels = ["Objetivo:", "Perfil identificado:", "Classificação:", "Interpretação clínica:"]
     
     for linha in texto_latin.split('\n'):
         linha_limpa = linha.strip()
         
         if not linha_limpa:
-            pdf.ln(3) # Aumentado sutilmente para criar um respiro entre os tópicos
+            pdf.ln(3)
+            continue
+            
+        # Cria uma linha cinza separadora quando encontrar as marcações (___)
+        if linha_limpa.startswith("___"):
+            pdf.ln(2)
+            pdf.set_draw_color(220, 220, 220)
+            pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+            pdf.ln(4)
             continue
             
         if any(linha_limpa.startswith(trigger) for trigger in bold_triggers):
@@ -116,14 +125,22 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             pdf.multi_cell(190, 6, linha, 0, 'L')
             pdf.set_font("Arial", '', 10)
             
-        elif linha_limpa.startswith('(') and linha_limpa.endswith(')'):
-            pdf.set_font("Arial", 'I', 9)
-            pdf.multi_cell(190, 5, linha, 0, 'L')
-            pdf.set_font("Arial", '', 10)
-            
         else:
-            pdf.set_font("Arial", '', 10)
-            pdf.multi_cell(190, 5, linha, 0, 'L')
+            # Identifica se a linha começa com algum dos Rótulos para aplicar negrito apenas nele
+            is_inline = False
+            for label in inline_labels:
+                if linha_limpa.startswith(label):
+                    parts = linha.split(":", 1)
+                    pdf.set_font("Arial", 'B', 10)
+                    pdf.write(6, parts[0] + ":")
+                    pdf.set_font("Arial", '', 10)
+                    pdf.write(6, parts[1] + "\n")
+                    is_inline = True
+                    break
+            
+            if not is_inline:
+                pdf.set_font("Arial", '', 10)
+                pdf.multi_cell(190, 5, linha, 0, 'L')
             
     pdf.ln(15) 
     
@@ -260,7 +277,7 @@ def main():
         teve_parto_vaginal_previo = (partos_normais > 0)
         
         if tem_cesarea_previa:
-            st.warning("⚠️ Paciente com histórico de Partos Cesáreos Anteriores (Avaliação para VBAC)")
+            st.warning("⚠️ Paciente com histórico de Parto Cesáreo Anterior (Avaliação para VBAC)")
             
             col_vbac1, col_vbac2 = st.columns(2)
             with col_vbac1:
@@ -270,7 +287,7 @@ def main():
                 )
             with col_vbac2:
                 st.markdown("**Fatores Predicionais (MFMU):**")
-                motivo_cesarea_parada = st.checkbox("Parto cesáreo anterior foi por parada de progressão ou descida?")
+                motivo_cesarea_parada = st.checkbox("Cesárea anterior foi por parada de progressão ou descida?")
                 if teve_parto_vaginal_previo:
                     vbac_previo = st.checkbox("A paciente já teve um parto normal APÓS o parto cesáreo (VBAC prévio)?")
                 else:
@@ -368,7 +385,7 @@ def main():
             apresentacao = st.selectbox("Apresentação Fetal", ["Cefálica", "Pélvica", "Córmica"])
         
         with col_tp:
-            inicio_tp = st.selectbox("Início do Trabalho de Parto", ["Espontâneo", "Induzido", "Parto Cesáreo antes do TP"])
+            inicio_tp = st.selectbox("Início do Trabalho de Parto", ["Espontâneo", "Induzido", "Cesárea antes do TP"])
             
         col_au, col_bcf, col_du, col_vazia1 = st.columns(4)
         with col_au:
@@ -404,7 +421,7 @@ def main():
         if st.button("Gerar Relatório de Apoio à Decisão", type="primary"):
             with st.spinner("Processando análise clínica..."):
                 
-                # --- LÓGICA DO TÓPICO 1 (NOVA ABORDAGEM CLÍNICA) ---
+                # --- LÓGICA DO TÓPICO 1 ---
                 lst_fav, lst_risco = avaliar_dados_identificacao(
                     idade, imc_atual, comorbidades_selecionadas, obstetricas_selecionadas, placenta_previa
                 )
@@ -412,7 +429,7 @@ def main():
                 formatados_fav = "\n".join([f"- {f}" for f in lst_fav])
                 formatados_risco = "\n".join([f"- {f}" for f in lst_risco])
 
-                # --- LÓGICA DO TÓPICO 2 (ROBSON - MANTIDA INTACTA) ---
+                # --- LÓGICA DO TÓPICO 2 (ROBSON) ---
                 ig_robson = "Termo" if dias_gest >= 259 else "Pré-termo"
                 paridade_total = partos_normais + partos_cesareos
                 nulipara = (paridade_total == 0)
@@ -446,7 +463,7 @@ def main():
                     if nulipara:
                         if inicio_tp == "Espontâneo":
                             grupo_robson = "Grupo 1"
-                            descricao_robson = "Nulíparas, feto único, cefálico, >= 37 semanas, TP espontâneo."
+                            descricao_robson = "Nulíparas, feto único, cefálico, >= 37 semanas, trabalho de parto espontâneo."
                             repercussao_robson = "Excelente prognóstico. Espera-se alta taxa de sucesso para parto vaginal. O Ministério da Saúde orienta envidar esforços para evitar o primeiro parto cesáreo neste grupo."
                         else:
                             grupo_robson = "Grupo 2"
@@ -460,14 +477,14 @@ def main():
                         else:
                             if inicio_tp == "Espontâneo":
                                 grupo_robson = "Grupo 3"
-                                descricao_robson = "Multíparas (sem cesárea prévia), feto único, cefálico, >= 37 semanas, TP espontâneo."
+                                descricao_robson = "Multíparas (sem cesárea prévia), feto único, cefálico, >= 37 semanas, trabalho de parto espontâneo."
                                 repercussao_robson = "Altíssima probabilidade de parto vaginal rápido e bem-sucedido. O risco de parto cesáreo neste cenário clínico é o menor de todos os grupos."
                             else:
                                 grupo_robson = "Grupo 4"
                                 descricao_robson = "Multíparas (sem cesárea prévia), feto único, cefálico, >= 37 semanas, induzido ou cesárea antes do TP."
                                 repercussao_robson = "Excelente probabilidade de parto vaginal pela multiparidade, porém a necessidade de indução eleva levemente o risco de falha comparado ao grupo 3."
 
-                # --- LÓGICA DO TÓPICO 3 (BISHOP - MANTIDA INTACTA) ---
+                # --- LÓGICA DO TÓPICO 3 (BISHOP) ---
                 pontos_bishop = 0
                 if dilatacao == "1 a 2 cm": pontos_bishop += 1
                 elif dilatacao == "3 a 4 cm": pontos_bishop += 2
@@ -490,7 +507,7 @@ def main():
                 status_bishop = "Desfavorável" if pontos_bishop <= 6 else "Favorável"
                 repercussao_bishop = "O colo maduro favorece amplamente a progressão natural ou uma eventual indução, indicando alta probabilidade de desfecho vaginal com menor duração de trabalho de parto." if status_bishop == "Favorável" else "Colo imaturo. Maior risco de falha de indução e evolução para parto cesáreo por parada de progressão. A literatura indica a necessidade de preparo cervical prévio (ex: métodos mecânicos ou prostaglandinas)."
 
-                # --- LÓGICA DO TÓPICO 4 (VBAC/MFMU - MANTIDA INTACTA) ---
+                # --- LÓGICA DO TÓPICO 4 (VBAC/MFMU) ---
                 texto_vbac = ""
                 conclusao_vbac = ""
                 
@@ -514,7 +531,7 @@ def main():
                     texto_vbac = "Não aplicável. Paciente sem histórico de partos cesáreos."
                     conclusao_vbac = "Sem repercussão direta."
 
-                # --- MONTAGEM FINAL COM HIERARQUIA VISUAL APRIMORADA ---
+                # --- MONTAGEM FINAL ---
                 nome_paciente = nome if nome else "Paciente não identificada"
                 data_atual_str = datetime.now(FUSO_BRASILIA).strftime("%d/%m/%Y às %H:%M")
                 
@@ -529,35 +546,37 @@ Fatores favoráveis ao parto vaginal:
 Fatores favoráveis ao parto cesariano:
 {formatados_risco}
 
+____________________________________________________________
+
 2. CLASSIFICAÇÃO DE ROBSON
-(A Classificação de Robson é padronizada pela OMS para categorizar gestantes, monitorar taxas de parto cesáreo nos serviços e predizer a expectativa de via de parto.)
 
-Identificado:
-{descricao_robson}
+Objetivo: Categorizar gestantes, monitorar taxas de parto cesáreo nos serviços e estimar a expectativa de via de parto.
 
-Classificação:
-{grupo_robson}
+Perfil identificado: {descricao_robson}
 
-Repercussão na via de parto:
-{repercussao_robson}
+Classificação: {grupo_robson}
+
+Interpretação clínica: {repercussao_robson}
+
+____________________________________________________________
 
 3. ÍNDICE DE BISHOP
-(O Índice de Bishop avalia clinicamente a maturidade cervical e prediz a probabilidade de sucesso de uma indução do trabalho de parto ou da sua progressão espontânea.)
 
-Identificado:
-Colo {status_bishop} (Pontuação total: {pontos_bishop})
+Objetivo: Avaliar a maturidade cervical e estimar a probabilidade de sucesso da indução ou progressão do trabalho de parto.
 
-Repercussão na via de parto:
-{repercussao_bishop}
+Perfil identificado: Colo {status_bishop} (Pontuação total: {pontos_bishop})
+
+Interpretação clínica: {repercussao_bishop}
+
+____________________________________________________________
 
 4. AVALIAÇÃO PARA VBAC (Partos Vaginais após Partos Cesáreos)
-(O modelo matemático MFMU estima a probabilidade individualizada de sucesso de um parto normal após um parto cesáreo, servindo para o aconselhamento obstétrico embasado.)
 
-Identificado:
-{texto_vbac}
+Objetivo: Estimar a probabilidade individualizada de sucesso de um parto normal após um parto cesáreo, servindo para o aconselhamento obstétrico embasado.
 
-Repercussão na via de parto:
-{conclusao_vbac}
+Perfil identificado: {texto_vbac}
+
+Interpretação clínica: {conclusao_vbac}
 """
                 st.success("Relatório de Apoio à Decisão gerado com sucesso!")
                 st.text_area("Cópia de Texto Rápido (Prontuário):", relatorio_final, height=650)
