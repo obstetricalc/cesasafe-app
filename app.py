@@ -146,6 +146,17 @@ def main():
     # --- INJEÇÃO DE CSS PERSONALIZADO (DESIGN PREMIUM) ---
     st.markdown("""
     <style>
+        /* Fundo da página em degradê (Verde/Teal clarinho no topo para mais escuro em baixo) */
+        .stApp {
+            background: linear-gradient(to bottom, #F0F8F7 0%, #A8D5D2 100%) !important;
+            background-attachment: fixed !important;
+        }
+        
+        /* Deixa a faixa de cabeçalho do Streamlit transparente para não cortar o degradê */
+        [data-testid="stHeader"] {
+            background-color: transparent !important;
+        }
+
         /* Cor principal dos títulos (H1, H2, H4) - Tom de Teal/Azul Médico */
         h1, h2, h4 {
             color: #1A6B7C !important;
@@ -156,7 +167,7 @@ def main():
         h3 {
             color: #1A6B7C !important;
             font-weight: 600 !important;
-            font-size: 1.15rem !important; /* Tamanho reduzido e elegante */
+            font-size: 1.15rem !important;
         }
         
         /* Botão Primário (Gerar Relatório) - Arredondado com sombra e efeito hover */
@@ -191,21 +202,22 @@ def main():
         /* Caixas de Warning (Amarelo) e Info (Azul) com bordas mais arredondadas */
         div[data-testid="stAlert"] {
             border-radius: 8px !important;
+            background-color: rgba(255, 255, 255, 0.8) !important; /* Deixa o fundo do aviso levemente transparente */
         }
 
-        /* Estilizando os Expanders (Menus Sanfona) para manterem o visual de Card Premium */
+        /* Estilizando os Expanders (Menus Sanfona) para manterem o visual de Card Premium e destacarem no degradê */
         div[data-testid="stExpander"] {
             border-radius: 12px !important;
             border: 1px solid #E2E8F0 !important;
-            background-color: #F8FAFC !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+            background-color: rgba(255, 255, 255, 0.95) !important; /* Branco quase total para dar contraste com o degradê */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08) !important;
             margin-bottom: 1.5rem !important;
         }
         
         /* Ajustando o texto do título do Expander para a cor AZUL ESCURO da logo */
         div[data-testid="stExpander"] summary p {
             font-size: 1.3rem !important;
-            color: #0B3B60 !important; /* NOVO: Tom azul marinho escuro inspirado na logo */
+            color: #0B3B60 !important;
             font-weight: 600 !important;
         }
     </style>
@@ -552,7 +564,7 @@ def main():
                         if vbac_previo:
                             conclusao_vbac = "Predominância de fator favorável: O histórico de VBAC prévio eleva drasticamente a probabilidade estatística de novo sucesso (>80%). A conduta pende firmemente para tentativa de via vaginal."
                         else:
-                            conclusao_vbac = "Presença de fatores desfavoráveis: O cenário atual compromete o índice de sucesso basal calculado pelo modelo estatístico."
+                            conclusao_vbac = "Presença de factors desfavoráveis: O cenário atual compromete o índice de sucesso basal calculado pelo modelo estatístico."
                     
                     probabilidade = calcular_mfmu_vbac(idade, imc, teve_parto_vaginal_previo, vbac_previo, motivo_cesarea_parada)
 
