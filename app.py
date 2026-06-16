@@ -9,8 +9,7 @@ import io
 # FUNDAÇÃO: CONFIGURAÇÃO DA PÁGINA
 # ==========================================
 st.set_page_config(
-    page_title="CesaScore: Apoio à Decisão", 
-    page_icon="🤰", 
+    page_title="CesaScore: Apoio à Decisão",
     layout="wide"
 )
 
