@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit st
 import pandas as pd
 import math
 from datetime import datetime, date, timedelta, timezone
@@ -190,9 +190,9 @@ def gerar_pdf(relatorio_texto, data_hora_str):
 def main():
     st.markdown("""
     <style>
-        /* Aumenta significativamente a fonte na plataforma web */
+        /* Reduzido em 4 unidades (de 25px para 21px) */
         p, span, label, input, select, textarea, li, div[data-testid="stMarkdownContainer"] p {
-            font-size: 25px !important; 
+            font-size: 21px !important; 
         }
         
         /* Ajusta títulos de seções no site */
@@ -220,12 +220,12 @@ def main():
             background-color: #1A6B7C !important; color: white !important; border-radius: 8px !important;
             border: none !important; padding: 0.5rem 1rem !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
             transition: all 0.3s ease !important; font-weight: bold !important;
-            font-size: 24px !important;
+            font-size: 20px !important; /* Reduzido em 4 unidades (de 24px para 20px) */
         }
         .stButton > button[kind="primary"]:hover {
             background-color: #124B57 !important; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
         }
-        div[data-testid="stMetricValue"] { color: #1A6B7C !important; font-size: 40px !important; }
+        div[data-testid="stMetricValue"] { color: #1A6B7C !important; font-size: 36px !important; /* Ajustado proporcionalmente */ }
         hr { border-top: 1px solid #E2E8F0 !important; }
         div[data-testid="stAlert"] { border-radius: 8px !important; border: none !important; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important; }
         div[data-testid="stExpander"] {
@@ -429,7 +429,7 @@ def main():
         with col_bcf:
             bcf = st.number_input("**BCF (bpm)**", min_value=0, max_value=250, value=140, step=1, help="Faixa de normalidade considerada: 120 a 160 bpm")
         with col_du:
-            dinamica = st.number_input("**Contrações / 10 min**", min_value=0, max_value=10, value=0, step=1, help="Dinâmica Uterina (nº de contrações em 10 minutes)")
+            dinamica = st.number_input("**Contrações / 10 min**", min_value=0, max_value=10, value=0, step=1, help="Dinâmica Uterina (nº de contrações em 10 minutos)")
 
         st.markdown("---")
 
