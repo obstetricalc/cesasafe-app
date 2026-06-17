@@ -1,4 +1,4 @@
-import streamlit st
+import streamlit as st
 import pandas as pd
 import math
 from datetime import datetime, date, timedelta, timezone
@@ -250,7 +250,7 @@ def main():
     # ==========================================
     # BLOCO 1: IDENTIFICAÇÃO
     # ==========================================
-    with st.expander("1. Identificação", expanded=True):
+    with st.expander("1. IDENTIFICAÇÃO", expanded=True):
         data_minima = date(HOJE_BRASILIA.year - 60, 1, 1)
         data_maxima = HOJE_BRASILIA
         
