@@ -9,7 +9,7 @@ import io
 # FUNDAÇÃO: CONFIGURAÇÃO DA PÁGINA
 # ==========================================
 st.set_page_config(
-    page_title="CesaScore: Apoio à Decisão",
+    page_title="CesaScore: Apoio à Decisão", 
     layout="wide"
 )
 
@@ -190,6 +190,18 @@ def gerar_pdf(relatorio_texto, data_hora_str):
 def main():
     st.markdown("""
     <style>
+        /* Reduz o espaço em branco gigante no topo da página */
+        .block-container { 
+            padding-top: 2rem !important; 
+        }
+        
+        /* Centraliza a imagem da Logo mantendo as proporções originais */
+        [data-testid="stImage"] {
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+        }
+
         .stApp { background-color: #F8FAFC !important; }
         [data-testid="stHeader"] { background-color: transparent !important; }
         h1, h2, h4 { color: #0B3B60 !important; font-weight: 600 !important; }
@@ -216,7 +228,7 @@ def main():
     try:
         st.image("logo.png", width=500) 
     except:
-        st.title("CesaScore")
+        st.markdown("<h1 style='text-align: center; color: #0B3B60;'>CesaScore</h1>", unsafe_allow_html=True)
     
     st.markdown("""
     **Aviso Legal:** Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. 
