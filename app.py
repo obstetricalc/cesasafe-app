@@ -242,9 +242,8 @@ def main():
         st.title("CesaScore")
     
     st.markdown("""
-    **Aviso Legal:** Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. 
-    A decisão clínica final é de responsabilidade exclusiva do médico obstetra.
-    """)
+    <p style="font-size: 17px !important;"><b>Aviso Legal:</b> Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. A decisão clínica final é de responsabilidade exclusiva do médico obstetra.</p>
+    """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ==========================================
@@ -295,7 +294,7 @@ def main():
     # ==========================================
     # BLOCO 2: HISTÓRICO OBSTÉTRICO
     # ==========================================
-    with st.expander("2. Histórico Obstétrico", expanded=False):
+    with st.expander("2. HISTÓRICO OBSTÉTRICO", expanded=False):
         col_g, col_pn, col_pc, col_a = st.columns(4)
         with col_g:
             gestacoes = st.number_input("**G (Gestações)**", min_value=1, value=1, step=1)
@@ -407,7 +406,7 @@ def main():
     # ==========================================
     # BLOCO 3: EXAME FÍSICO E OBSTÉTRICO
     # ==========================================
-    with st.expander("3. Exame Físico e Obstétrico", expanded=False):
+    with st.expander("3. EXAME FÍSICO E OBSTÉTRICO", expanded=False):
         st.subheader("Avaliação Fetal e Dinâmica Uterina")
         col_fetos, col_sit, col_apres, col_tp = st.columns(4)
         
@@ -453,7 +452,7 @@ def main():
     # ==========================================
     # BLOCO 4: RELATÓRIO FINAL DE APOIO À DECISÃO
     # ==========================================
-    with st.expander("4. Relatório CesaScore", expanded=False):
+    with st.expander("4. RELATÓRIO CESASCORE", expanded=False):
         if st.button("Gerar Relatório de Apoio à Decisão", type="primary"):
             with st.spinner("Processando análise clínica..."):
                 
