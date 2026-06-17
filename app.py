@@ -66,9 +66,10 @@ class PDF(FPDF):
     def footer(self):
         self.set_y(-25)
         try:
-            self.image("1.jpg", 70, self.get_y(), 20)
-            self.image("2.png", 95, self.get_y(), 20)
-            self.image("3.png", 120, self.get_y(), 20)
+            # Largura reduzida em 20% (de 20 para 16) e posições ajustadas para manter a centralização
+            self.image("1.jpg", 72, self.get_y(), 16)
+            self.image("2.png", 97, self.get_y(), 16)
+            self.image("3.png", 122, self.get_y(), 16)
         except:
             pass
 
@@ -90,7 +91,6 @@ def gerar_pdf(relatorio_texto, data_hora_str):
     
     # Títulos principais que recebem negrito na linha inteira
     bold_triggers = [
-        "RESUMO DOS DADOS INFORMADOS",
         "1. IDENTIFICAÇÃO",
         "2. CLASSIFICAÇÃO DE ROBSON",
         "3. ÍNDICE DE BISHOP",
@@ -191,18 +191,6 @@ def gerar_pdf(relatorio_texto, data_hora_str):
 def main():
     st.markdown("""
     <style>
-        /* Reduz o espaço em branco gigante no topo da página */
-        .block-container { 
-            padding-top: 2rem !important; 
-        }
-        
-        /* Centraliza a imagem da Logo mantendo as proporções originais */
-        [data-testid="stImage"] {
-            margin: 0 auto;
-            display: flex;
-            justify-content: center;
-        }
-
         .stApp { background-color: #F8FAFC !important; }
         [data-testid="stHeader"] { background-color: transparent !important; }
         h1, h2, h4 { color: #0B3B60 !important; font-weight: 600 !important; }
@@ -229,7 +217,7 @@ def main():
     try:
         st.image("logo.png", width=500) 
     except:
-        st.markdown("<h1 style='text-align: center; color: #0B3B60;'>CesaScore</h1>", unsafe_allow_html=True)
+        st.title("CesaScore")
     
     st.markdown("""
     **Aviso Legal:** Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. 
@@ -557,45 +545,12 @@ def main():
                     texto_vbac = "Não aplicável. Paciente sem histórico de partos cesáreos."
                     conclusao_vbac = "Sem repercussão direta."
 
-                # --- LÓGICA DO RESUMO DOS DADOS PREENCHIDOS ---
-                imc_pre_str = f"{imc:.1f} kg/m²" if imc is not None else "N/I"
-                imc_atual_str = f"{imc_atual:.1f} kg/m²" if imc_atual is not None else "N/I"
-                peso_pre_str = f"{peso_pre_kg:.1f} kg" if peso_pre_kg is not None else "N/I"
-                peso_atual_str = f"{peso_atual_kg:.1f} kg" if peso_atual_kg is not None else "N/I"
-                altura_str = f"{altura_cm:.0f} cm" if altura_cm is not None else "N/I"
-                idade_str = f"{idade} anos" if idade is not None else "N/I"
-                ig_str = f"{dias_gest // 7} sem e {dias_gest % 7} dias" if (dum or dpp_eco) else "Não informada"
-
-                comorbs_str = ", ".join(comorbidades_selecionadas) if comorbidades_selecionadas else "Nenhuma"
-                obst_str = ", ".join(obstetricas_selecionadas) if obstetricas_selecionadas else "Nenhum"
-
-                resumo_dados = f"""RESUMO DOS DADOS INFORMADOS
-
-Idade: {idade_str} | Peso Pré: {peso_pre_str} | Peso Atual: {peso_atual_str} | Altura: {altura_str}
-IMC Pré: {imc_pre_str} | IMC Atual: {imc_atual_str}
-Histórico Obstétrico: G{gestacoes} PN{partos_normais} PC{partos_cesareos} A{abortos}"""
-
-                if partos_cesareos > 0:
-                    resumo_dados += f"\nÚltimo parto cesáreo: {tempo_cesarea} | Parada de progressão/descida: {'Sim' if motivo_cesarea_parada else 'Não'} | VBAC prévio: {'Sim' if vbac_previo else 'Não'}"
-
-                resumo_dados += f"""
-Idade Gestacional: {ig_str}
-Comorbidades: {comorbs_str}
-Fatores Obstétricos: {obst_str}
-Fetos: {tipo_gestacao} | Situação: {situacao} | Apresentação: {apresentacao} | Início do TP: {inicio_tp}
-Exame Físico: AU {au} cm | BCF {bcf} bpm | Dinâmica: {dinamica} contr./10min
-Toque Vaginal: Dilatação {dilatacao} | Esvaecimento {esvaecimento} | De Lee {altura_apres} | Consistência {consistencia} | Posição {posicao_colo}"""
-
                 # --- MONTAGEM FINAL ---
                 nome_paciente = nome if nome else "PACIENTE NÃO IDENTIFICADA"
                 data_atual_str = datetime.now(FUSO_BRASILIA).strftime("%d/%m/%Y às %H:%M")
                 
                 relatorio_final = f"""RELATÓRIO CLÍNICO DE APOIO À DECISÃO - CESASCORE
 PACIENTE: {nome_paciente.upper()}
-
-{resumo_dados}
-
-___
 
 1. IDENTIFICAÇÃO
 
