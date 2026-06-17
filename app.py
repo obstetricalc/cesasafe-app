@@ -213,12 +213,12 @@ def main():
             background-color: #1A6B7C !important; color: white !important; border-radius: 8px !important;
             border: none !important; padding: 0.5rem 1rem !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
             transition: all 0.3s ease !important; font-weight: bold !important;
-            font-size: 20px !important; /* Reduzido em 4 unidades (de 24px para 20px) */
+            font-size: 20px !important; 
         }
         .stButton > button[kind="primary"]:hover {
             background-color: #124B57 !important; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
         }
-        div[data-testid="stMetricValue"] { color: #1A6B7C !important; font-size: 36px !important; /* Ajustado proporcionalmente */ }
+        div[data-testid="stMetricValue"] { color: #1A6B7C !important; font-size: 36px !important; }
         hr { border-top: 1px solid #E2E8F0 !important; }
         div[data-testid="stAlert"] { border-radius: 8px !important; border: none !important; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important; }
         div[data-testid="stExpander"] {
@@ -246,7 +246,7 @@ def main():
     # ==========================================
     # BLOCO 1: IDENTIFICAÇÃO
     # ==========================================
-    with st.expander("1. IDENTIFICAÇÃO", expanded=True):
+    with st.expander("1. IDENTIFICAÇÃO", expanded=False):
         data_minima = date(HOJE_BRASILIA.year - 60, 1, 1)
         data_maxima = HOJE_BRASILIA
         
