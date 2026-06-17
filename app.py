@@ -190,59 +190,67 @@ def gerar_pdf(relatorio_texto, data_hora_str):
 def main():
     st.markdown("""
     <style>
-        /* Reduzido em 4 unidades (de 25px para 21px) */
-        p, span, label, input, select, textarea, li, div[data-testid="stMarkdownContainer"] p {
-            font-size: 21px !important; 
+        /* Reduz o tamanho de todas as fontes gerais da interface web de forma agressiva */
+        .stApp, .stApp p, .stApp span, .stApp label, .stApp input, .stApp select, .stApp textarea, .stApp li {
+            font-size: 16px !important; 
         }
         
-        /* Ajusta títulos de seções no site */
-        h1 { font-size: 3.4rem !important; }
-        h2 { font-size: 2.8rem !important; }
-        h3 { font-size: 2.2rem !important; }
+        /* Força títulos dos blocos e seções a se manterem legíveis e destacados */
+        h1 { font-size: 3.0rem !important; }
+        h2 { font-size: 2.4rem !important; }
+        h3 { font-size: 1.8rem !important; color: #1A6B7C !important; }
 
-        /* Reduz o espaço gigante no topo da página */
+        /* Remove margens e espaços excessivos no topo da visualização */
         .block-container { 
             padding-top: 1.5rem !important; 
         }
         
-        /* Centraliza a imagem da logo */
-        [data-testid="stImage"] {
-            display: flex;
-            justify-content: center;
-            margin: 0 auto;
+        /* Força o contêiner do Streamlit a centralizar perfeitamente a logo no meio da página */
+        div[data-testid="stImage"] {
+            display: flex !important;
+            justify-content: center !important;
+            text-align: center !important;
+            margin: 0 auto !important;
+            width: 100% !important;
+        }
+        div[data-testid="stImage"] > img {
+            width: 650px !important;
+            max-width: 100% !important;
+            height: auto !important;
+            margin: 0 auto !important;
         }
 
         .stApp { background-color: #F8FAFC !important; }
         [data-testid="stHeader"] { background-color: transparent !important; }
         h1, h2, h4 { color: #0B3B60 !important; font-weight: 600 !important; }
-        h3 { color: #1A6B7C !important; font-weight: 600 !important; }
+        
         .stButton > button[kind="primary"] {
             background-color: #1A6B7C !important; color: white !important; border-radius: 8px !important;
             border: none !important; padding: 0.5rem 1rem !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
             transition: all 0.3s ease !important; font-weight: bold !important;
-            font-size: 20px !important; /* Reduzido em 4 unidades (de 24px para 20px) */
+            font-size: 16px !important;
         }
         .stButton > button[kind="primary"]:hover {
             background-color: #124B57 !important; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
         }
-        div[data-testid="stMetricValue"] { color: #1A6B7C !important; font-size: 36px !important; /* Ajustado proporcionalmente */ }
+        div[data-testid="stMetricValue"] { color: #1A6B7C !important; font-size: 28px !important; }
         hr { border-top: 1px solid #E2E8F0 !important; }
         div[data-testid="stAlert"] { border-radius: 8px !important; border: none !important; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important; }
         div[data-testid="stExpander"] {
             border-radius: 12px !important; border: 1px solid #F1F5F9 !important; background-color: #FFFFFF !important;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important; margin-bottom: 1.5rem !important;
         }
-        div[data-testid="stExpander"] summary p { font-size: 1.9rem !important; color: #0B3B60 !important; font-weight: 600 !important; }
+        div[data-testid="stExpander"] summary p { font-size: 1.4rem !important; color: #0B3B60 !important; font-weight: 600 !important; }
     </style>
     """, unsafe_allow_html=True)
 
     try:
-        st.image("logo.png", width=500) 
+        st.image("logo.png", width=650)
     except:
         st.title("CesaScore")
     
     st.markdown("""
-    <p style="font-size: 17px !important;"><b>Aviso Legal:</b> Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. A decisão clínica final é de responsabilidade exclusiva do médico obstetra.</p>
+    <p style="font-size: 13px !important; color: #333;"><b>Aviso Legal:</b> Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. A decisão clínica final é de responsabilidade exclusiva do médico obstetra.</p>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -508,7 +516,7 @@ def main():
                         if tem_cesarea_previa:
                             grupo_robson = "Grupo 5"
                             descricao_robson = "Multíparas, feto único, cefálico, >= 37 semanas, com parto cesáreo prévio."
-                            repercussao_robson = "Candidatas clássicas à prova de trabalho de parto (VBAC). O sucesso é viável, porém, na prática, este grupo concentra a maior parcela de partos cesáreos de repetição nos hospitais."
+                            repercussao_robson = "Candidatas clássicas à prova de trabalho de parto (VBAC). O sucesso é viável, porém, na prática, este grupo concentrates a maior parcela de partos cesáreos de repetição nos hospitais."
                         else:
                             if inicio_tp == "Espontâneo":
                                 grupo_robson = "Grupo 3"
