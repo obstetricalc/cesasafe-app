@@ -247,10 +247,10 @@ def main():
         c1, c2, c3 = st.columns([2, 1, 1])
         
         with c1:
-            nome = st.text_input("Nome da Paciente", placeholder="Digite o nome completo")
+            nome = st.text_input("**Nome da Paciente**", placeholder="Digite o nome completo")
             
         with c2:
-            data_nasc = st.date_input("Data de Nascimento", value=None, min_value=data_minima, max_value=data_maxima, format="DD/MM/YYYY")
+            data_nasc = st.date_input("**Data de Nascimento**", value=None, min_value=data_minima, max_value=data_maxima, format="DD/MM/YYYY")
             
         with c3:
             idade = None
@@ -264,13 +264,13 @@ def main():
         c4, c5, c6, c7 = st.columns(4)
         
         with c4:
-            peso_pre_kg = st.number_input("Peso Pré-gestacional (kg)", min_value=30.0, max_value=250.0, value=None, step=0.1, format="%.1f", placeholder="Ex: 70.5")
+            peso_pre_kg = st.number_input("**Peso Pré-gestacional (kg)**", min_value=30.0, max_value=250.0, value=None, step=0.1, format="%.1f", placeholder="Ex: 70.5")
             
         with c5:
-            peso_atual_kg = st.number_input("Peso Atual (kg)", min_value=30.0, max_value=250.0, value=None, step=0.1, format="%.1f", placeholder="Ex: 80.0")
+            peso_atual_kg = st.number_input("**Peso Atual (kg)**", min_value=30.0, max_value=250.0, value=None, step=0.1, format="%.1f", placeholder="Ex: 80.0")
             
         with c6:
-            altura_cm = st.number_input("Altura (cm)", min_value=100.0, max_value=250.0, value=None, step=1.0, format="%.0f", placeholder="Ex: 160")
+            altura_cm = st.number_input("**Altura (cm)**", min_value=100.0, max_value=250.0, value=None, step=1.0, format="%.0f", placeholder="Ex: 160")
             
         with c7:
             if altura_cm is not None and altura_cm > 0:
@@ -288,13 +288,13 @@ def main():
     with st.expander("2. Histórico Obstétrico", expanded=False):
         col_g, col_pn, col_pc, col_a = st.columns(4)
         with col_g:
-            gestacoes = st.number_input("G (Gestações)", min_value=1, value=1, step=1)
+            gestacoes = st.number_input("**G (Gestações)**", min_value=1, value=1, step=1)
         with col_pn:
-            partos_normais = st.number_input("PN (Partos Normais)", min_value=0, value=0, step=1)
+            partos_normais = st.number_input("**PN (Partos Normais)**", min_value=0, value=0, step=1)
         with col_pc:
-            partos_cesareos = st.number_input("PC (Partos Cesáreos)", min_value=0, value=0, step=1)
+            partos_cesareos = st.number_input("**PC (Partos Cesáreos)**", min_value=0, value=0, step=1)
         with col_a:
-            abortos = st.number_input("A (Abortos)", min_value=0, value=0, step=1)
+            abortos = st.number_input("**A (Abortos)**", min_value=0, value=0, step=1)
 
         tempo_cesarea = None
         motivo_cesarea_parada = False
@@ -303,19 +303,19 @@ def main():
         teve_parto_vaginal_previo = (partos_normais > 0)
         
         if tem_cesarea_previa:
-            st.warning("⚠️ Paciente com histórico de Partos Cesáreos Anteriores (Avaliação para VBAC)")
+            st.warning("⚠️ Paciente com histórico de Parto Cesáreo Anterior (Avaliação para VBAC)")
             
             col_vbac1, col_vbac2 = st.columns(2)
             with col_vbac1:
                 tempo_cesarea = st.radio(
-                    "Há quanto tempo ocorreu o último parto cesáreo?",
+                    "**Há quanto tempo ocorreu o último parto cesáreo?**",
                     ["Menos de 2 anos (< 24 meses)", "Mais de 2 anos (≥ 24 meses)"]
                 )
             with col_vbac2:
                 st.markdown("**Fatores Predicionais (MFMU):**")
-                motivo_cesarea_parada = st.checkbox("Parto cesáreo anterior foi por parada de progressão ou descida?")
+                motivo_cesarea_parada = st.checkbox("**Cesárea anterior foi por parada de progressão ou descida?**")
                 if teve_parto_vaginal_previo:
-                    vbac_previo = st.checkbox("A paciente já teve um parto normal APÓS o parto cesáreo (VBAC prévio)?")
+                    vbac_previo = st.checkbox("**A paciente já teve um parto normal APÓS o parto cesáreo (VBAC prévio)?**")
                 else:
                     st.info("Paciente sem partos vaginais prévios registrados.")
 
@@ -325,7 +325,7 @@ def main():
         dias_gest = 280 
         
         with col_dum:
-            dum = st.date_input("DUM (Última Menstruação)", value=None, format="DD/MM/YYYY")
+            dum = st.date_input("**DUM (Última Menstruação)**", value=None, format="DD/MM/YYYY")
         
         with col_ig_dum:
             if dum:
@@ -343,7 +343,7 @@ def main():
         col_eco, col_ig_eco, col_vazia = st.columns(3)
         
         with col_eco:
-            dpp_eco = st.date_input("DPP pela 1ª USG (Eco)", value=None, format="DD/MM/YYYY")
+            dpp_eco = st.date_input("**DPP pela 1ª USG (Eco)**", value=None, format="DD/MM/YYYY")
         
         with col_ig_eco:
             if dpp_eco:
@@ -361,7 +361,7 @@ def main():
         
         with col_comorb:
             comorbidades_selecionadas = st.multiselect(
-                "Comorbidades Maternas",
+                "**Comorbidades Maternas**",
                 options=["Hipertensão Crônica", "Diabetes Pré-gestacional", "Obesidade", "Cardiopatias", "Doença Renal Crônica", "Doença Autoimune", "Outras"],
                 placeholder="Selecione as comorbidades...",
                 max_selections=7
@@ -377,7 +377,7 @@ def main():
             
         with col_obst:
             obstetricas_selecionadas = st.multiselect(
-                "Fatores Obstétricos da Gestação Atual",
+                "**Fatores Obstétricos da Gestação Atual**",
                 options=["Pré-eclâmpsia", "Diabetes Gestacional", "Placenta Prévia", "Gestação Gemelar", "Restrição de Crescimento Fetal", "Macrossomia Fetal", "Oligodrâmnio", "Polidrâmnio", "Apresentação Pélvica", "Apresentação Transversa"],
                 placeholder="Selecione os fatores...",
                 max_selections=10
@@ -402,24 +402,24 @@ def main():
         col_fetos, col_sit, col_apres, col_tp = st.columns(4)
         
         with col_fetos:
-            tipo_gestacao = st.selectbox("Número de Fetos", ["Único", "Múltiplo (Gêmeos ou mais)"])
+            tipo_gestacao = st.selectbox("**Número de Fetos**", ["Único", "Múltiplo (Gêmeos ou mais)"])
         
         with col_sit:
-            situacao = st.selectbox("Situação Fetal", ["Longitudinal", "Transversa", "Oblíqua"])
+            situacao = st.selectbox("**Situação Fetal**", ["Longitudinal", "Transversa", "Oblíqua"])
             
         with col_apres:
-            apresentacao = st.selectbox("Apresentação Fetal", ["Cefálica", "Pélvica", "Córmica"])
+            apresentacao = st.selectbox("**Apresentação Fetal**", ["Cefálica", "Pélvica", "Córmica"])
         
         with col_tp:
-            inicio_tp = st.selectbox("Início do Trabalho de Parto", ["Espontâneo", "Induzido", "Cesárea antes do TP"])
+            inicio_tp = st.selectbox("**Início do Trabalho de Parto**", ["Espontâneo", "Induzido", "Cesárea antes do TP"])
             
         col_au, col_bcf, col_du, col_vazia1 = st.columns(4)
         with col_au:
-            au = st.number_input("AU (cm)", min_value=0, max_value=60, value=0, step=1, help="Altura Uterina")
+            au = st.number_input("**AU (cm)**", min_value=0, max_value=60, value=0, step=1, help="Altura Uterina")
         with col_bcf:
-            bcf = st.number_input("BCF (bpm)", min_value=0, max_value=250, value=140, step=1, help="Faixa de normalidade considerada: 120 a 160 bpm")
+            bcf = st.number_input("**BCF (bpm)**", min_value=0, max_value=250, value=140, step=1, help="Faixa de normalidade considerada: 120 a 160 bpm")
         with col_du:
-            dinamica = st.number_input("Contrações / 10 min", min_value=0, max_value=10, value=0, step=1, help="Dinâmica Uterina (nº de contrações em 10 minutos)")
+            dinamica = st.number_input("**Contrações / 10 min**", min_value=0, max_value=10, value=0, step=1, help="Dinâmica Uterina (nº de contrações em 10 minutos)")
 
         st.markdown("---")
 
@@ -428,17 +428,17 @@ def main():
         
         col_dilat, col_esvaec, col_altura = st.columns(3)
         with col_dilat:
-            dilatacao = st.selectbox("Dilatação (cm)", ["Fechado (0 cm)", "1 a 2 cm", "3 a 4 cm", "5 cm ou mais"])
+            dilatacao = st.selectbox("**Dilatação (cm)**", ["Fechado (0 cm)", "1 a 2 cm", "3 a 4 cm", "5 cm ou mais"])
         with col_esvaec:
-            esvaecimento = st.selectbox("Esvaecimento (%)", ["0 a 30%", "40 a 50%", "60 a 70%", "80% ou mais"])
+            esvaecimento = st.selectbox("**Esvaecimento (%)**", ["0 a 30%", "40 a 50%", "60 a 70%", "80% ou mais"])
         with col_altura:
-            altura_apres = st.selectbox("Altura da Apresentação (De Lee)", ["-3", "-2", "-1", "0", "+1", "+2", "+3"])
+            altura_apres = st.selectbox("**Altura da Apresentação (De Lee)**", ["-3", "-2", "-1", "0", "+1", "+2", "+3"])
 
         col_consist, col_posic, col_vazia3 = st.columns(3)
         with col_consist:
-            consistencia = st.selectbox("Consistência do Colo", ["Firme", "Médio", "Amolecido"])
+            consistencia = st.selectbox("**Consistência do Colo**", ["Firme", "Médio", "Amolecido"])
         with col_posic:
-            posicao_colo = st.selectbox("Posição do Colo", ["Posterior", "Centralizado", "Anterior"])
+            posicao_colo = st.selectbox("**Posição do Colo**", ["Posterior", "Centralizado", "Anterior"])
 
     # ==========================================
     # BLOCO 4: RELATÓRIO FINAL DE APOIO À DECISÃO
