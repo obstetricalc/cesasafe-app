@@ -66,10 +66,9 @@ class PDF(FPDF):
     def footer(self):
         self.set_y(-25)
         try:
-            # Largura reduzida em 20% (de 20 para 16) e posições ajustadas para manter a centralização
-            self.image("1.jpg", 72, self.get_y(), 16)
-            self.image("2.png", 97, self.get_y(), 16)
-            self.image("3.png", 122, self.get_y(), 16)
+            self.image("1.jpg", 70, self.get_y(), 20)
+            self.image("2.png", 95, self.get_y(), 20)
+            self.image("3.png", 120, self.get_y(), 20)
         except:
             pass
 
@@ -191,6 +190,18 @@ def gerar_pdf(relatorio_texto, data_hora_str):
 def main():
     st.markdown("""
     <style>
+        /* Reduz o espaço gigante no topo da página */
+        .block-container { 
+            padding-top: 1.5rem !important; 
+        }
+        
+        /* Centraliza a imagem da logo */
+        [data-testid="stImage"] {
+            display: flex;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
         .stApp { background-color: #F8FAFC !important; }
         [data-testid="stHeader"] { background-color: transparent !important; }
         h1, h2, h4 { color: #0B3B60 !important; font-weight: 600 !important; }
