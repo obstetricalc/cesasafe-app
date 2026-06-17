@@ -82,8 +82,8 @@ def gerar_pdf(relatorio_texto, data_hora_str):
         pdf.image("logo.png", 75, 8, 60)
         pdf.set_y(45) 
     except:
-        pdf.set_font("Arial", 'B', 20)
-        pdf.cell(200, 12, "CESASCORE - RELATÓRIO", 0, 1, 'C')
+        pdf.set_font("Arial", 'B', 28)
+        pdf.cell(200, 16, "CESASCORE - RELATÓRIO", 0, 1, 'C')
         pdf.ln(15)
 
     texto_latin = relatorio_texto.encode('latin-1', 'replace').decode('latin-1')
@@ -117,12 +117,12 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             
         # Centralização do cabeçalho
         if "RELATÓRIO CLÍNICO DE APOIO À DECISÃO - CESASCORE" in linha_limpa:
-            pdf.set_font("Arial", 'B', 18)
-            pdf.cell(190, 9, linha_limpa, 0, 1, 'C')
+            pdf.set_font("Arial", 'B', 26)
+            pdf.cell(190, 14, linha_limpa, 0, 1, 'C')
             continue
         if linha_limpa.startswith("PACIENTE:"):
-            pdf.set_font("Arial", 'B', 17)
-            pdf.cell(190, 9, linha_limpa, 0, 1, 'C')
+            pdf.set_font("Arial", 'B', 25)
+            pdf.cell(190, 14, linha_limpa, 0, 1, 'C')
             pdf.ln(10) # Espaço gerando respiro após o cabeçalho
             continue
 
@@ -135,25 +135,25 @@ def gerar_pdf(relatorio_texto, data_hora_str):
             continue
             
         if any(linha_limpa.startswith(trigger) for trigger in bold_triggers):
-            pdf.set_font("Arial", 'B', 17)
-            pdf.multi_cell(190, 8, linha, 0, 'L')
-            pdf.set_font("Arial", '', 16)
+            pdf.set_font("Arial", 'B', 25)
+            pdf.multi_cell(190, 13, linha, 0, 'L')
+            pdf.set_font("Arial", '', 24)
             
         else:
             is_inline = False
             for label in inline_labels:
                 if linha_limpa.startswith(label):
-                    parts = linha.split(":", 1)
-                    pdf.set_font("Arial", 'B', 16)
-                    pdf.write(7, parts[0] + ":")
-                    pdf.set_font("Arial", '', 16)
-                    pdf.write(7, parts[1] + "\n")
+                    parts = inline_labels.split(":", 1) if hasattr(inline_labels, 'split') else linha.split(":", 1)
+                    pdf.set_font("Arial", 'B', 24)
+                    pdf.write(11, parts[0] + ":")
+                    pdf.set_font("Arial", '', 24)
+                    pdf.write(11, parts[1] + "\n")
                     is_inline = True
                     break
             
             if not is_inline:
-                pdf.set_font("Arial", '', 16)
-                pdf.multi_cell(190, 7, linha, 0, 'L')
+                pdf.set_font("Arial", '', 24)
+                pdf.multi_cell(190, 11, linha, 0, 'L')
             
     pdf.ln(15) 
     
@@ -161,26 +161,26 @@ def gerar_pdf(relatorio_texto, data_hora_str):
         pdf.add_page()
     
     pdf.set_x(10)
-    pdf.set_font("Arial", 'B', 14)
+    pdf.set_font("Arial", 'B', 22)
     pdf.set_fill_color(200, 240, 200)
     
     aviso = "Aviso Legal: Ferramenta acadêmica de apoio baseada em protocolos assistenciais. A decisão clínica final é de responsabilidade do médico obstetra."
     aviso_latin = aviso.encode('latin-1', 'replace').decode('latin-1')
     
-    pdf.multi_cell(190, 7, aviso_latin, 0, 'L', True)
+    pdf.multi_cell(190, 10, aviso_latin, 0, 'L', True)
     
     pdf.ln(20) 
     y_assinatura = pdf.get_y()
     
-    pdf.set_font("Arial", '', 16)
+    pdf.set_font("Arial", '', 24)
     texto_data = f"Relatório gerado em: {data_hora_str}".encode('latin-1', 'replace').decode('latin-1')
     pdf.set_xy(10, y_assinatura)
-    pdf.cell(90, 7, texto_data, 0, 0, 'L')
+    pdf.cell(90, 11, texto_data, 0, 0, 'L')
     
     pdf.set_xy(120, y_assinatura)
-    pdf.cell(80, 7, "________________________________________", 0, 1, 'C')
+    pdf.cell(80, 11, "________________________________________", 0, 1, 'C')
     pdf.set_x(120)
-    pdf.cell(80, 7, "Profissional avaliador", 0, 1, 'C')
+    pdf.cell(80, 11, "Profissional avaliador", 0, 1, 'C')
     
     return bytes(pdf.output(dest='S'), encoding='latin-1')
 
@@ -530,7 +530,7 @@ def main():
                 elif posicao_colo == "Anterior": pontos_bishop += 2
                 
                 status_bishop = "Desfavorável" if pontos_bishop <= 6 else "Favorável"
-                repercussao_bishop = "O colo maduro favorece amplamente a progressão natural ou uma eventual indução, indicando alta probabilidade de desfecho vaginal com menor duração de trabalho de parto." if status_bishop == "Favorável" else "Colo imaturo. Maior risco de falha de indução e evolução para parto cesáreo por parada de progressão. A literatura indica a necessidade de preparo cervical prévio (ex: métodos mecânicos ou prostaglandinas)."
+                repercussao_bishop = "O colo maduro favors-se amplamente a progressão natural ou uma eventual indução, indicando alta probabilidade de desfecho vaginal com menor duração de trabalho de parto." if status_bishop == "Favorável" else "Colo imaturo. Maior risco de falha de indução e evolução para parto cesáreo por parada de progressão. A literatura indica a necessidade de preparo cervical prévio (ex: métodos mecânicos ou prostaglandinas)."
 
                 # --- LÓGICA DO TÓPICO 4 (VBAC/MFMU) ---
                 texto_vbac = ""
