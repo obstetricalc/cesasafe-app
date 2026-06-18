@@ -192,56 +192,75 @@ def gerar_pdf(relatorio_texto, data_hora_str):
 def main():
     st.markdown("""
     <style>
-        /* Reduzido em 4 unidades (de 25px para 21px) */
-        p, span, label, input, select, textarea, li, div[data-testid="stMarkdownContainer"] p {
-            font-size: 21px !important; 
+        /* Oculta a mensagem de 'Press Enter to apply' nos campos de input */
+        [data-testid="InputInstructions"] {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Reduzido em 2 unidades adicionais (de 17px para 15px) */
+        .stApp, .stApp p, .stApp span, .stApp label, .stApp input, .stApp select, .stApp textarea, .stApp li {
+            font-size: 15px !important; 
         }
         
         /* Ajusta títulos de seções no site */
-        h1 { font-size: 3.4rem !important; }
-        h2 { font-size: 2.8rem !important; }
-        h3 { font-size: 2.2rem !important; }
+        h1 { font-size: 2.8rem !important; }
+        h2 { font-size: 2.2rem !important; }
+        h3 { font-size: 1.6rem !important; color: #1A6B7C !important; }
 
-        /* Reduz o espaço gigante no topo da página */
+        /* Remove margens e espaços excessivos no topo da visualização */
         .block-container { 
             padding-top: 1.5rem !important; 
+        }
+        
+        /* Força o contêiner do Streamlit a centralizar perfeitamente a logo no meio da página */
+        div[data-testid="stImage"] {
+            display: flex !important;
+            justify-content: center !important;
+            text-align: center !important;
+            margin: 0 auto !important;
+            width: 100% !important;
+        }
+        div[data-testid="stImage"] > img {
+            width: 650px !important;
+            max-width: 100% !important;
+            height: auto !important;
+            margin: 0 auto !important;
         }
 
         .stApp { background-color: #F8FAFC !important; }
         [data-testid="stHeader"] { background-color: transparent !important; }
         h1, h2, h4 { color: #0B3B60 !important; font-weight: 600 !important; }
-        h3 { color: #1A6B7C !important; font-weight: 600 !important; }
+        
         .stButton > button[kind="primary"] {
             background-color: #1A6B7C !important; color: white !important; border-radius: 8px !important;
             border: none !important; padding: 0.5rem 1rem !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
             transition: all 0.3s ease !important; font-weight: bold !important;
-            font-size: 20px !important; /* Reduzido em 4 unidades (de 24px para 20px) */
+            font-size: 14px !important; /* Reduzido em 2 unidades */
         }
         .stButton > button[kind="primary"]:hover {
             background-color: #124B57 !important; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
         }
-        div[data-testid="stMetricValue"] { color: #1A6B7C !important; font-size: 36px !important; /* Ajustado proporcionalmente */ }
+        div[data-testid="stMetricValue"] { color: #1A6B7C !important; font-size: 26px !important; } /* Reduzido em 2 unidades */
         hr { border-top: 1px solid #E2E8F0 !important; }
         div[data-testid="stAlert"] { border-radius: 8px !important; border: none !important; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important; }
         div[data-testid="stExpander"] {
             border-radius: 12px !important; border: 1px solid #F1F5F9 !important; background-color: #FFFFFF !important;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important; margin-bottom: 1.5rem !important;
         }
-        div[data-testid="stExpander"] summary p { font-size: 1.9rem !important; color: #0B3B60 !important; font-weight: 600 !important; }
+        div[data-testid="stExpander"] summary p { font-size: 1.3rem !important; color: #0B3B60 !important; font-weight: 600 !important; } /* Reduzido proporcionalmente */
     </style>
     """, unsafe_allow_html=True)
 
-    # Nova lógica infalível para centralizar a logo principal no meio da tela
     col_espaco_esq, col_logo, col_espaco_dir = st.columns([1, 2, 1])
     with col_logo:
         try:
-            # use_container_width=True faz a logo preencher a coluna do meio (que é aprox. 50% da tela)
-            st.image("logo.png", use_container_width=True) 
+            st.image("logo.png", use_container_width=True)
         except:
             st.markdown("<h1 style='text-align: center; color: #0B3B60;'>CesaScore</h1>", unsafe_allow_html=True)
     
     st.markdown("""
-    <p style="font-size: 17px !important;"><b>Aviso Legal:</b> Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. A decisão clínica final é de responsabilidade exclusiva do médico obstetra.</p>
+    <p style="font-size: 13px !important; color: #333;"><b>Aviso Legal:</b> Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. A decisão clínica final é de responsabilidade exclusiva do médico obstetra.</p>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -333,7 +352,7 @@ def main():
         dias_gest = 280 
         
         with col_dum:
-            dum = st.date_input("**DUM (Última Menstruação)**", value=None, format="DD/MM/YYYY")
+            dum = st.date_input("**DUM (Data da Última Menstruação)**", value=None, format="DD/MM/YYYY")
         
         with col_ig_dum:
             if dum:
@@ -346,12 +365,12 @@ def main():
         with col_dpp_dum:
             if dum:
                 dpp_calc = dum + timedelta(days=280)
-                st.metric("DPP (pela DUM)", dpp_calc.strftime('%d/%m/%Y'))
+                st.metric("DPP (Data Provável do Parto) pela DUM", dpp_calc.strftime('%d/%m/%Y'))
 
         col_eco, col_ig_eco, col_vazia = st.columns(3)
         
         with col_eco:
-            dpp_eco = st.date_input("**DPP pela 1ª USG (Eco)**", value=None, format="DD/MM/YYYY")
+            dpp_eco = st.date_input("**DPP (Data Provável do Parto) pela 1ª USG (Eco)**", value=None, format="DD/MM/YYYY")
         
         with col_ig_eco:
             if dpp_eco:
