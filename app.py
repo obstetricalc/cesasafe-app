@@ -198,15 +198,15 @@ def main():
             visibility: hidden !important;
         }
 
-        /* Reduzido em 2 unidades adicionais (de 17px para 15px) */
-        .stApp, .stApp p, .stApp span, .stApp label, .stApp input, .stApp select, .stApp textarea, .stApp li {
-            font-size: 15px !important; 
+        /* Restaurado para o tamanho anterior estável (21px) */
+        p, span, label, input, select, textarea, li, div[data-testid="stMarkdownContainer"] p {
+            font-size: 21px !important; 
         }
         
         /* Ajusta títulos de seções no site */
-        h1 { font-size: 2.8rem !important; }
-        h2 { font-size: 2.2rem !important; }
-        h3 { font-size: 1.6rem !important; color: #1A6B7C !important; }
+        h1 { font-size: 3.4rem !important; }
+        h2 { font-size: 2.8rem !important; }
+        h3 { font-size: 2.2rem !important; color: #1A6B7C !important; }
 
         /* Remove margens e espaços excessivos no topo da visualização */
         .block-container { 
@@ -236,22 +236,23 @@ def main():
             background-color: #1A6B7C !important; color: white !important; border-radius: 8px !important;
             border: none !important; padding: 0.5rem 1rem !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
             transition: all 0.3s ease !important; font-weight: bold !important;
-            font-size: 14px !important; /* Reduzido em 2 unidades */
+            font-size: 20px !important; /* Restaurado para o tamanho anterior estável */
         }
         .stButton > button[kind="primary"]:hover {
             background-color: #124B57 !important; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
         }
-        div[data-testid="stMetricValue"] { color: #1A6B7C !important; font-size: 26px !important; } /* Reduzido em 2 unidades */
+        div[data-testid="stMetricValue"] { color: #1A6B7C !important; font-size: 36px !important; }
         hr { border-top: 1px solid #E2E8F0 !important; }
         div[data-testid="stAlert"] { border-radius: 8px !important; border: none !important; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important; }
         div[data-testid="stExpander"] {
             border-radius: 12px !important; border: 1px solid #F1F5F9 !important; background-color: #FFFFFF !important;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important; margin-bottom: 1.5rem !important;
         }
-        div[data-testid="stExpander"] summary p { font-size: 1.3rem !important; color: #0B3B60 !important; font-weight: 600 !important; } /* Reduzido proporcionalmente */
+        div[data-testid="stExpander"] summary p { font-size: 1.9rem !important; color: #0B3B60 !important; font-weight: 600 !important; }
     </style>
     """, unsafe_allow_html=True)
 
+    # Nova lógica infalível para centralizar a logo principal no meio da tela
     col_espaco_esq, col_logo, col_espaco_dir = st.columns([1, 2, 1])
     with col_logo:
         try:
@@ -260,7 +261,7 @@ def main():
             st.markdown("<h1 style='text-align: center; color: #0B3B60;'>CesaScore</h1>", unsafe_allow_html=True)
     
     st.markdown("""
-    <p style="font-size: 13px !important; color: #333;"><b>Aviso Legal:</b> Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. A decisão clínica final é de responsabilidade exclusiva do médico obstetra.</p>
+    <p style="font-size: 17px !important;"><b>Aviso Legal:</b> Esta ferramenta é um protótipo acadêmico auxiliar, baseado em protocolos assistenciais. A decisão clínica final é de responsabilidade exclusiva do médico obstetra.</p>
     """, unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
