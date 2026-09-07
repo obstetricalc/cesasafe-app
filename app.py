@@ -322,7 +322,7 @@ def main():
                 "Imunossupressores / Corticoides prolongados",
                 "Outros"
             ],
-            help="O uso de anticoagulantes nas últimas 12h configura Alto Risco de Sangramento (Protocolo Einstein, v.5)."
+            help="O uso de anticoagulantes nas últimas 12h configura Alto Risco de Sangramento."
         )
 
         # Se "Outros" for selecionado, abre um campo de texto para especificar:
@@ -363,7 +363,7 @@ def main():
             with col_vbac1:
                 tempo_cesarea = st.radio(
                     "**Há quanto tempo ocorreu o último parto cesáreo?**",
-                    ["Menos de 2 anos (< 24 meses)", "Mais de 2 anos (≥ 24 meses)"]
+                    ["Menos de 18 meses", "18 meses ou mais"]
                 )
             with col_vbac2:
                 st.markdown("**Fatores Predicionais (MFMU):**")
@@ -447,6 +447,30 @@ def main():
             polidramnio = "Polidrâmnio" in obstetricas_selecionadas
             apres_pelvica = "Apresentação Pélvica" in obstetricas_selecionadas
             apres_transversa = "Apresentação Transversa" in obstetricas_selecionadas
+
+        st.markdown("---")
+        st.markdown("### Avaliação de Risco Clínico e Anestésico")
+        col_hb, col_asa = st.columns(2)
+        
+        with col_hb:
+            hb_materna = st.number_input(
+                "**Nível de Hemoglobina (Hb) em g/dL**", 
+                min_value=4.0, max_value=20.0, value=None, step=0.1, format="%.1f",
+                help="Hb < 10 configura Alto Risco de Sangramento."
+            )
+            
+        with col_asa:
+            classificacao_asa = st.selectbox(
+                "**Classificação ASA (Risco Anestésico)**",
+                options=[
+                    "ASA 1: Hígida",
+                    "ASA 2: Doença sistêmica leve (ex: obesidade, gestação)",
+                    "ASA 3: Doença sistêmica moderada/grave (ex: HAS descompensada)",
+                    "ASA 4: Doença sistêmica grave com risco de vida",
+                    "ASA 5: Paciente moribunda"
+                ],
+                help="Classificação da American Society of Anesthesiologists para o estado físico da paciente."
+            )
 
     # ==========================================
     # BLOCO 3: EXAME FÍSICO E OBSTÉTRICO
@@ -626,6 +650,8 @@ def main():
                 meds_selecionadas_str = ", ".join(medicacoes) if medicacoes else "Nenhuma"
                 if outras_meds:
                     meds_selecionadas_str += f" ({outras_meds})"
+                    
+                hb_str = f"{hb_materna:.1f} g/dL" if hb_materna is not None else "Não informado"
 
                 resumo_dados = f"""DADOS INFORMADOS
 
@@ -641,6 +667,7 @@ Idade Gestacional: {ig_str}
 Comorbidades: {comorbs_str}
 Medicações: {meds_selecionadas_str}
 Fatores Obstétricos: {obst_str}
+Risco Sistêmico: {classificacao_asa} | Hemoglobina: {hb_str}
 Fetos: {tipo_gestacao} | Situação: {situacao} | Apresentação: {apresentacao} | Início do TP: {inicio_tp}
 Exame Físico: AU {au} cm | BCF {bcf} bpm | Dinâmica: {dinamica} contr./10min
 Toque Vaginal: Dilatação {dilatacao} | Esvaecimento {esvaecimento} | De Lee {altura_apres} | Consistência {consistencia} | Posição {posicao_colo}"""
