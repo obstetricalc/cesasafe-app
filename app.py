@@ -309,6 +309,32 @@ def main():
                 if peso_atual_kg is not None:
                     imc_atual = peso_atual_kg / (altura_m ** 2)
                     st.metric("IMC Atual", f"{imc_atual:.1f} kg/m²")
+                    
+        st.markdown("---")
+        st.markdown("### Medicações de Uso Contínuo")
+        medicacoes = st.multiselect(
+            "Selecione as medicações em uso pela paciente (Impacto Cirúrgico/Anestésico):",
+            options=[
+                "Anticoagulantes (ex: Enoxaparina, AAS, Heparina)",
+                "Anti-hipertensivos (ex: Metildopa, Nifedipino)",
+                "Insulina ou Hipoglicemiantes Orais",
+                "Anticonvulsivantes",
+                "Imunossupressores / Corticoides prolongados",
+                "Outros"
+            ],
+            help="O uso de anticoagulantes nas últimas 12h configura Alto Risco de Sangramento (Protocolo Einstein, v.5)."
+        )
+
+        # Se "Outros" for selecionado, abre um campo de texto para especificar:
+        outras_meds = ""
+        if "Outros" in medicacoes:
+            outras_meds = st.text_input("Especifique outras medicações:")
+            
+        # Checkbox crítico (Gatilho de Risco)
+        uso_anticoagulante_recente = st.checkbox(
+            "⚠️ A paciente utilizou anticoagulante nas últimas 12 horas?", 
+            help="Atenção: Atraso necessário para raquianestesia e risco de hemorragia."
+        )
 
     # ==========================================
     # BLOCO 2: HISTÓRICO OBSTÉTRICO
@@ -596,6 +622,10 @@ def main():
 
                 comorbs_str = ", ".join(comorbidades_selecionadas) if comorbidades_selecionadas else "Nenhuma"
                 obst_str = ", ".join(obstetricas_selecionadas) if obstetricas_selecionadas else "Nenhum"
+                
+                meds_selecionadas_str = ", ".join(medicacoes) if medicacoes else "Nenhuma"
+                if outras_meds:
+                    meds_selecionadas_str += f" ({outras_meds})"
 
                 resumo_dados = f"""DADOS INFORMADOS
 
@@ -609,6 +639,7 @@ Histórico Obstétrico: G{gestacoes} PN{partos_normais} PC{partos_cesareos} A{ab
                 resumo_dados += f"""
 Idade Gestacional: {ig_str}
 Comorbidades: {comorbs_str}
+Medicações: {meds_selecionadas_str}
 Fatores Obstétricos: {obst_str}
 Fetos: {tipo_gestacao} | Situação: {situacao} | Apresentação: {apresentacao} | Início do TP: {inicio_tp}
 Exame Físico: AU {au} cm | BCF {bcf} bpm | Dinâmica: {dinamica} contr./10min
