@@ -20,22 +20,6 @@ HOJE_BRASILIA = datetime.now(FUSO_BRASILIA).date()
 # ==========================================
 # CÁLCULOS PREDITIVOS E CLÍNICOS
 # ==========================================
-def calcular_mfmu_vbac(idade, imc, parto_vaginal_previo, vbac_previo, motivo_cesarea_parada):
-    if idade is None or imc is None:
-        return None 
-        
-    intercepto = 3.515
-    coef_idade = -0.035 * idade
-    coef_imc = -0.063 * imc
-    coef_vaginal = 0.816 if parto_vaginal_previo else 0
-    coef_vbac = 1.047 if vbac_previo else 0
-    coef_parada = -0.638 if motivo_cesarea_parada else 0
-    
-    w = intercepto + coef_idade + coef_imc + coef_vaginal + coef_vbac + coef_parada
-    
-    probabilidade = math.exp(w) / (1 + math.exp(w))
-    return probabilidade * 100
-
 def avaliar_dados_identificacao(idade, imc_atual, comorbidades, obstetricas, placenta_previa):
     fav = []
     risco = []
@@ -94,8 +78,7 @@ def gerar_pdf(relatorio_texto, data_hora_str):
         "ANÁLISE DOS DADOS",
         "1. IDENTIFICAÇÃO",
         "2. CLASSIFICAÇÃO DE ROBSON",
-        "3. ÍNDICE DE BISHOP",
-        "4. AVALIAÇÃO PARA VBAC"
+        "3. ÍNDICE DE BISHOP"
     ]
     bold_triggers = [t.encode('latin-1', 'replace').decode('latin-1') for t in bold_triggers]
     
@@ -351,27 +334,14 @@ def main():
             abortos = st.number_input("**A (Abortos)**", min_value=0, value=0, step=1)
 
         tempo_cesarea = None
-        motivo_cesarea_parada = False
-        vbac_previo = False
         tem_cesarea_previa = (partos_cesareos > 0)
-        teve_parto_vaginal_previo = (partos_normais > 0)
         
         if tem_cesarea_previa:
-            st.warning("⚠️ Paciente com histórico de Parto Cesáreo Anterior (Avaliação para VBAC)")
-            
-            col_vbac1, col_vbac2 = st.columns(2)
-            with col_vbac1:
-                tempo_cesarea = st.radio(
-                    "**Há quanto tempo ocorreu o último parto cesáreo?**",
-                    ["Menos de 18 meses", "18 meses ou mais"]
-                )
-            with col_vbac2:
-                st.markdown("**Fatores Predicionais (MFMU):**")
-                motivo_cesarea_parada = st.checkbox("**Cesárea anterior foi por parada de progressão ou descida?**")
-                if teve_parto_vaginal_previo:
-                    vbac_previo = st.checkbox("**A paciente já teve um parto normal APÓS o parto cesáreo (VBAC prévio)?**")
-                else:
-                    st.info("Paciente sem partos vaginais prévios registrados.")
+            st.warning("⚠️ Paciente com histórico de Parto Cesáreo Anterior")
+            tempo_cesarea = st.radio(
+                "**Há quanto tempo ocorreu o último parto cesáreo?**",
+                ["Menos de 18 meses", "18 meses ou mais"]
+            )
 
         st.markdown("---") 
         
@@ -611,30 +581,6 @@ def main():
                 status_bishop = "Desfavorável" if pontos_bishop <= 6 else "Favorável"
                 repercussao_bishop = "O colo maduro favorece amplamente a progressão natural ou uma eventual indução, indicando alta probabilidade de desfecho vaginal com menor duração de trabalho de parto." if status_bishop == "Favorável" else "Colo imaturo. Maior risco de falha de indução e evolução para parto cesáreo por parada de progressão. A literatura indica a necessidade de preparo cervical prévio (ex: métodos mecânicos ou prostaglandinas)."
 
-                # --- LÓGICA DO TÓPICO 4 (VBAC/MFMU) ---
-                texto_vbac = ""
-                conclusao_vbac = ""
-                
-                if tem_cesarea_previa:
-                    fatores_vbac = []
-                    if vbac_previo: fatores_vbac.append("Histórico de Parto Normal após parto cesáreo (Fator fortemente favorável)")
-                    if motivo_cesarea_parada: fatores_vbac.append("Parto cesáreo anterior por parada de progressão/descida (Fator desfavorável)")
-                    if imc_atual and imc_atual >= 30: fatores_vbac.append("Obesidade atual (Fator desfavorável)")
-                    if idade and idade >= 35: fatores_vbac.append("Idade >= 35 anos (Fator desfavorável)")
-                    
-                    if not fatores_vbac:
-                        texto_vbac = "Nenhum fator preditor adverso ou positivo extremo identificado. O risco assume o padrão basal."
-                        conclusao_vbac = "A paciente possui condições adequadas para a prova de trabalho de parto."
-                    else:
-                        texto_vbac = " | ".join(fatores_vbac)
-                        if vbac_previo:
-                            conclusao_vbac = "Predominância de fator favorável: O histórico de VBAC prévio eleva drasticamente a probabilidade estatística de novo sucesso (>80%). A conduta pende firmemente para tentativa de via vaginal."
-                        else:
-                            conclusao_vbac = "Presença de fatores desfavoráveis: O cenário atual compromete o índice de sucesso basal calculado pelo modelo estatístico."
-                else:
-                    texto_vbac = "Não aplicável. Paciente sem histórico de partos cesáreos."
-                    conclusao_vbac = "Sem repercussão direta."
-
                 # --- LÓGICA DO RESUMO DOS DADOS PREENCHIDOS ---
                 imc_pre_str = f"{imc:.1f} kg/m²" if imc is not None else "N/I"
                 imc_atual_str = f"{imc_atual:.1f} kg/m²" if imc_atual is not None else "N/I"
@@ -660,7 +606,7 @@ IMC Pré: {imc_pre_str} | IMC Atual: {imc_atual_str}
 Histórico Obstétrico: G{gestacoes} PN{partos_normais} PC{partos_cesareos} A{abortos}"""
 
                 if partos_cesareos > 0:
-                    resumo_dados += f"\nÚltimo parto cesáreo: {tempo_cesarea} | Parada de progressão/descida: {'Sim' if motivo_cesarea_parada else 'Não'} | VBAC prévio: {'Sim' if vbac_previo else 'Não'}"
+                    resumo_dados += f"\nÚltimo parto cesáreo: {tempo_cesarea}"
 
                 resumo_dados += f"""
 Idade Gestacional: {ig_str}
@@ -712,16 +658,6 @@ Objetivo: Avaliar a maturidade cervical e estimar a probabilidade de sucesso da 
 Perfil identificado: Colo {status_bishop} (Pontuação total: {pontos_bishop})
 
 Interpretação clínica: {repercussao_bishop}
-
-___
-
-4. AVALIAÇÃO PARA VBAC (Partos Vaginais após Partos Cesáreos)
-
-Objetivo: Estimar a probabilidade individualizada de sucesso de um parto normal após um parto cesáreo, servindo para o aconselhamento obstétrico embasado.
-
-Perfil identificado: {texto_vbac}
-
-Interpretação clínica: {conclusao_vbac}
 """
                 st.success("Relatório de Apoio à Decisão gerado com sucesso!")
                 st.text_area("Cópia de Texto Rápido (Prontuário):", relatorio_final, height=650)
